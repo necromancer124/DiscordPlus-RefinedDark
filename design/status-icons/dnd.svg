@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <title>Do Not Disturb</title>
+  <defs><mask id="m"><rect width="16" height="16" fill="#fff"/><rect x="3.75" y="6.6" width="8.5" height="2.8" rx="1.4" fill="#000"/></mask></defs>
+  <circle cx="8" cy="8" r="7" fill="#f04755" mask="url(#m)"/>
+</svg>

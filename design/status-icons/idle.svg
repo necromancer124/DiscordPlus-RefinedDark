@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <title>Idle</title>
+  <defs><mask id="m"><rect width="16" height="16" fill="#fff"/><circle cx="11.6" cy="4.4" r="5.2" fill="#000"/></mask></defs>
+  <circle cx="8" cy="8" r="7" fill="#f0b74a" mask="url(#m)"/>
+</svg>
