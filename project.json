@@ -1,0 +1,14 @@
+{
+  "name": "discordplus-refined-dark",
+  "version": "1.6.0",
+  "type": "vencord-userplugin",
+  "preview": "preview/index.html",
+  "pluginPath": "vencord/userplugins/discordPlus",
+  "themePath": "vencord/discord-plus-refined.theme.css",
+  "requiresNetworkForPreview": false,
+  "realDiscordIntegrationTested": false,
+  "installer": "INSTALL.bat",
+  "uninstaller": "UNINSTALL.bat",
+  "sourceSpecification": "MASTER_PROMPT.md",
+  "license": "CC-BY-NC-4.0"
+}

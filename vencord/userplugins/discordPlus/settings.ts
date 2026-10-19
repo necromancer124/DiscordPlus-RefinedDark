@@ -1,0 +1,162 @@
+/*
+ * Discord+ Refined Dark
+ * SPDX-License-Identifier: CC-BY-NC-4.0
+ */
+import { definePluginSettings } from "@api/Settings";
+import { OptionType } from "@utils/types";
+
+export interface Placement {
+    x: number;
+    y: number;
+    w?: number;
+    h?: number;
+}
+
+export type FriendFilter = "all" | "online" | "recent" | "unread" | "favorites" | "pending" | "blocked";
+
+export const settings = definePluginSettings({
+    // ── Layout ──────────────────────────────────────────────────────────
+    homeOverlay: {
+        type: OptionType.BOOLEAN,
+        description: "Replace the Friends page with the Discord+ home (friends grid + messages)",
+        default: true
+    },
+    globalHeader: {
+        type: OptionType.BOOLEAN,
+        description: "Show the Discord+ navigation header on every page",
+        default: true
+    },
+    hideDmColumn: {
+        type: OptionType.BOOLEAN,
+        description: "Remove Discord's Friends / DM column on Home and in DMs (navigation lives in the Discord+ header)",
+        default: true
+    },
+    headerUserControls: {
+        type: OptionType.BOOLEAN,
+        description: "Show your avatar, mute, deafen and settings in the Discord+ header",
+        default: true
+    },
+    hideQuestPromo: {
+        type: OptionType.BOOLEAN,
+        description: "Replace Discord's quest promo card with a small dot on the Quests tab",
+        default: true
+    },
+    dockStreamVideo: {
+        type: OptionType.BOOLEAN,
+        description: "Show Discord's live stream window inside the call manager instead of floating separately",
+        default: true
+    },
+    // v1.1 renamed these (with new defaults) so values saved by v1.0 don't keep them switched on.
+    fullWidthDms: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the native DM list while a conversation is open (only with the floating dock)",
+        default: false
+    },
+    floatingDock: {
+        type: OptionType.BOOLEAN,
+        description: "Replace Discord's bottom-left user panel with a movable floating dock (off = Discord's own panel)",
+        default: false
+    },
+    snapDock: {
+        type: OptionType.BOOLEAN,
+        description: "Snap the user dock to screen edges when dragged close",
+        default: true
+    },
+    callManager: {
+        type: OptionType.BOOLEAN,
+        description: "Show the floating voice-call manager when you leave an active call's page",
+        default: true
+    },
+    hideNativeUserPanel: {
+        type: OptionType.BOOLEAN,
+        description: "With the floating dock on, also hide Discord's bottom-left user/voice panel",
+        default: true
+    },
+    // ── Appearance ──────────────────────────────────────────────────────
+    applyTheme: {
+        type: OptionType.BOOLEAN,
+        description: "Apply the Refined Dark colours to the whole client",
+        default: true
+    },
+    accent: {
+        type: OptionType.STRING,
+        description: "Accent colour (hex, e.g. #7478f8)",
+        default: "#7478f8",
+        isValid: (v: string) => /^#[\da-f]{6}$/i.test(v) || "Use a 6-digit hex colour like #7478f8"
+    },
+    density: {
+        type: OptionType.SELECT,
+        description: "Friend card density",
+        options: [
+            { label: "Comfortable", value: "comfortable", default: true },
+            { label: "Compact", value: "compact" }
+        ]
+    },
+    messagePreviews: {
+        type: OptionType.BOOLEAN,
+        description: "Show the latest cached message on friend cards",
+        default: true
+    },
+    showActivity: {
+        type: OptionType.BOOLEAN,
+        description: "Show games / custom status on friend cards",
+        default: true
+    },
+    defaultFilter: {
+        type: OptionType.SELECT,
+        description: "Friends filter selected when you open Discord+ home",
+        options: [
+            { label: "All", value: "all", default: true },
+            { label: "Online", value: "online" },
+            { label: "Recent", value: "recent" },
+            { label: "Unread", value: "unread" },
+            { label: "Favorites", value: "favorites" }
+        ]
+    },
+    showQuestChip: {
+        type: OptionType.BOOLEAN,
+        description: "Show a small dismissible Quests shortcut in the bottom-right corner",
+        default: false
+    },
+    reduceMotion: {
+        type: OptionType.BOOLEAN,
+        description: "Turn off Discord+ animations (system reduced-motion is always respected)",
+        default: false
+    },
+    // ── Stored state (not shown in the settings UI) ─────────────────────
+    favorites: {
+        type: OptionType.CUSTOM,
+        default: [] as string[]
+    },
+    dockPlacement: {
+        type: OptionType.CUSTOM,
+        default: null as Placement | null
+    },
+    callPlacement: {
+        type: OptionType.CUSTOM,
+        default: null as Placement | null
+    },
+    /** Members hidden while a stream is shown in the call manager (the stream takes their space). */
+    callMembersHidden: {
+        type: OptionType.CUSTOM,
+        default: false
+    },
+    /** Floating call manager hidden; the call stays reachable from the header's call pill. */
+    callHidden: {
+        type: OptionType.CUSTOM,
+        default: false
+    },
+    callMinimized: {
+        type: OptionType.CUSTOM,
+        default: false
+    }
+});
+
+export function isFavorite(id: string) {
+    return settings.store.favorites.includes(id);
+}
+
+export function toggleFavorite(id: string) {
+    const favs = settings.store.favorites;
+    settings.store.favorites = favs.includes(id) ? favs.filter(f => f !== id) : [...favs, id];
+}

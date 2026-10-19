@@ -1,0 +1,48 @@
+name: Release
+
+# Push a tag like v1.5.1 to publish a release:
+#   git tag v1.5.1 && git push origin v1.5.1
+# The build check runs first; the release notes are that version's section of CHANGELOG.md.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Package
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          NAME="DiscordPlus-RefinedDark-$VERSION"
+          mkdir -p "dist/$NAME"
+          cp -r INSTALL.bat UNINSTALL.bat START_PREVIEW.bat installer vencord preview docs screenshots \
+                README.md LICENSE CHANGELOG.md DESIGN.md MASTER_PROMPT.md project.json "dist/$NAME/"
+          (cd dist && zip -qr "$NAME.zip" "$NAME")
+          (cd vencord/userplugins && zip -qr "../../dist/discordPlus-plugin-only-$VERSION.zip" discordPlus)
+
+          # Release notes: the "## vX.Y.Z — date" section of the changelog.
+          awk -v v="$VERSION" '/^## v/ { p = (index($0, "## v" v " ") == 1) } p' CHANGELOG.md > dist/notes.md
+          if [ ! -s dist/notes.md ]; then echo "Discord+ Refined Dark $VERSION" > dist/notes.md; fi
+          cat >> dist/notes.md <<'EOF'
+
+          ---
+          **Install (Windows):** download `DiscordPlus-RefinedDark-*.zip`, extract it, run `INSTALL.bat`.
+          **Undo:** turn DiscordPlus off in Discord → Settings → Vencord → Plugins, or run `UNINSTALL.bat`.
+          `discordPlus-plugin-only-*.zip` is just the plugin folder for people who build Vencord themselves.
+          EOF
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Discord+ Refined Dark ${{ github.ref_name }}
+          body_path: dist/notes.md
+          files: dist/*.zip

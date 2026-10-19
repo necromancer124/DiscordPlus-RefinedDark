@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Discord+ — Refined Dark | Interactive preview</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="app">
+  <aside class="server-rail" aria-label="Server navigation">
+    <button class="server-button home-button selected" data-server="home" title="Home" aria-label="Home"><svg class="ico"><use href="#i-discord"></use></svg></button>
+    <div class="rail-divider"></div>
+    <button class="server-button folder-button" data-server="folder1" title="Server folder"><svg class="ico"><use href="#i-folder"></use></svg></button>
+    <button class="server-button server-image" data-server="NightShift" title="Night Shift"><span>LC</span></button>
+    <button class="server-button server-image art-a" data-server="FriendsClub" title="Friends Club"><span>FC</span></button>
+    <button class="server-button server-image art-b" data-server="GamesHub" title="Games Hub"><span>GH</span></button>
+    <button class="server-button folder-button" data-server="folder2" title="Another server folder"><svg class="ico"><use href="#i-folder"></use></svg></button>
+    <button class="server-button server-image art-c" data-server="Northgate" title="Northgate"><span>NG</span></button>
+    <button class="server-button server-image art-d" data-server="Binding" title="Dungeon Club"><span>BI</span></button>
+    <button class="server-button folder-button" data-server="folder3" title="Server folder"><svg class="ico"><use href="#i-folder"></use></svg></button>
+    <button class="server-button server-image art-e" data-server="Network" title="Network Lab"><span>IP</span></button>
+    <div class="rail-grow"></div>
+    <button id="addServer" class="server-button muted-button" title="Add a server (preview)"><svg class="ico"><use href="#i-plus"></use></svg></button>
+  </aside>
+  <main class="workspace">
+    <header class="topbar">
+      <nav class="nav-items" aria-label="Main navigation">
+        <button class="nav-item active" data-page="friends"><svg class="ico"><use href="#i-users"></use></svg> Friends</button>
+        <button class="nav-item" data-page="messages"><svg class="ico"><use href="#i-message"></use></svg> Messages <span id="messagesBadge" class="nav-badge">3</span></button>
+        <button class="nav-item optional-nav" data-page="requests"><svg class="ico"><use href="#i-mail"></use></svg> Requests</button>
+        <button class="nav-item optional-nav" data-page="nitro"><svg class="ico"><use href="#i-sparkle"></use></svg> Nitro</button>
+        <button class="nav-item optional-nav" data-page="shop"><svg class="ico"><use href="#i-bag"></use></svg> Shop</button>
+        <button class="nav-item optional-nav" data-page="family"><svg class="ico"><use href="#i-heart"></use></svg> Family</button>
+        <button class="nav-item optional-nav" data-page="quests"><svg class="ico"><use href="#i-compass"></use></svg> Quests</button>
+      </nav>
+      <button id="navOverflow" class="icon-btn overflow-menu" aria-label="More navigation" title="More"><svg class="ico"><use href="#i-more"></use></svg></button>
+      <div class="header-search"><svg class="ico"><use href="#i-search"></use></svg><input id="globalSearch" placeholder="Search friends or conversations…" aria-label="Global search"><span class="kbd">Ctrl K</span></div>
+      <button id="settingsHeader" class="icon-btn" title="Design settings" aria-label="Design settings"><svg class="ico"><use href="#i-settings"></use></svg></button>
+    </header>
+    <div id="view" class="view"></div>
+  </main>
+  <section id="voicePanel" class="voice-panel" aria-label="Voice call controls">
+    <div id="callDrag" class="voice-head drag-handle"><div class="call-head-copy"><span class="call-symbol"><svg class="ico"><use href="#i-volume"></use></svg></span><div><strong id="voiceTitle">Night Shift</strong><span id="callMeta">3 in call · 12:26</span></div></div><div class="call-head-actions"><button id="callMinimize" title="Minimize call" aria-label="Minimize call" class="icon-btn"><svg class="ico"><use href="#i-minus"></use></svg></button><button id="callClose" title="Disconnect" aria-label="Disconnect" class="icon-btn danger-hover"><svg class="ico"><use href="#i-close"></use></svg></button></div></div>
+    <div id="voiceExpanded" class="voice-expanded"><div id="voicePeople" class="voice-people"></div><div class="voice-controls"><button id="voiceMute" class="control-round" title="Mute" aria-label="Mute"><svg class="ico"><use href="#i-mic"></use></svg></button><button id="voiceDeafen" class="control-round" title="Deafen" aria-label="Deafen"><svg class="ico"><use href="#i-headphones"></use></svg></button><button id="voiceShare" class="control-round" title="Share screen (preview only)" aria-label="Share screen"><svg class="ico"><use href="#i-monitor"></use></svg></button><button id="returnToCall" class="return-call"><svg class="ico"><use href="#i-expand"></use></svg> Return to call</button><button id="voiceHangup" class="hangup" title="Disconnect" aria-label="Disconnect"><svg class="ico"><use href="#i-phone-off"></use></svg></button></div><div class="call-caption">Resize from the bottom-right corner · Click a participant to view profile</div></div>
+  </section>
+  <section id="userDock" class="user-dock" aria-label="Movable user controls"><div id="dockGrip" class="dock-grip drag-handle" title="Drag to move"><svg class="ico"><use href="#i-grip"></use></svg></div><div class="self-avatar">N</div><div class="self-name"><strong>N...</strong><span>Idle</span></div><button id="dockMute" class="icon-btn" title="Mute" aria-label="Mute"><svg class="ico"><use href="#i-mic"></use></svg></button><button id="dockDeafen" class="icon-btn" title="Deafen" aria-label="Deafen"><svg class="ico"><use href="#i-headphones"></use></svg></button><button id="dockSettings" class="icon-btn" title="Settings" aria-label="Settings"><svg class="ico"><use href="#i-settings"></use></svg></button></section>
+  <section id="settingsPanel" class="settings-panel hidden" aria-label="Discord+ preferences"><div class="settings-top"><strong>Discord+ settings</strong><button id="closeSettings" class="icon-btn" title="Close settings"><svg class="ico"><use href="#i-close"></use></svg></button></div><p>Preview preferences are saved only in this browser.</p><label class="field-label">Grid density <select id="densitySetting"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></label><label class="toggle-line"><input id="previewsSetting" type="checkbox" checked><span>Show message previews</span></label><label class="toggle-line"><input id="activitySetting" type="checkbox" checked><span>Show game activity</span></label><label class="toggle-line"><input id="questSetting" type="checkbox"><span>Show optional quest chip</span></label><label class="field-label">Accent color <input id="accentSetting" type="color" value="#7478f8"></label><button id="resetLayout" class="secondary-action full-width">Reset widget positions and settings</button><div class="settings-notice">Local prototype only. These options do not change Discord itself.</div></section>
+  <div id="profileModal" class="modal-overlay hidden" role="presentation"><section class="profile-modal" role="dialog" aria-modal="true" aria-label="Profile"><button class="modal-close icon-btn" id="closeProfile" title="Close"><svg class="ico"><use href="#i-close"></use></svg></button><div id="profileBody"></div></section></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</div>
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="svg-defs"><symbol id="i-discord" viewBox="0 0 24 24"><path d="M19.4 5.1A18 18 0 0 0 15.1 4l-.6 1.1a16 16 0 0 0-5 0L9 4a18 18 0 0 0-4.4 1.1C1.7 9.4.9 13.5 1.3 17.5a18 18 0 0 0 5.3 2.7l1.1-1.8c-.6-.2-1.1-.5-1.6-.8l.4-.3c3.5 1.6 7.5 1.6 11 0l.4.3c-.5.3-1 .6-1.6.8l1.1 1.8a18 18 0 0 0 5.3-2.7c.5-4.7-.8-8.8-3.3-12.4ZM8.5 15.1c-1.1 0-1.9-1-1.9-2.2 0-1.3.9-2.2 1.9-2.2s1.9.9 1.9 2.2-.8 2.2-1.9 2.2Zm7 0c-1.1 0-1.9-1-1.9-2.2 0-1.3.8-2.2 1.9-2.2s1.9.9 1.9 2.2-.8 2.2-1.9 2.2Z"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 5h7l2.3 2.4H21v11.4H3z"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 19v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m14-15a4 4 0 0 1 0 8m6 7v-2a4 4 0 0 0-3-3.87M13 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/></symbol>
+<symbol id="i-message" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8A8.6 8.6 0 0 1 12.5 20a8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7A8.4 8.4 0 0 1 4 11.5 8.6 8.6 0 0 1 12.5 3H13a8.6 8.6 0 0 1 8 8.5Z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 7l9 7 9-7"/></symbol>
+<symbol id="i-sparkle" viewBox="0 0 24 24"><path d="m12 2 2.3 7.7L22 12l-7.7 2.3L12 22l-2.3-7.7L2 12l7.7-2.3z"/></symbol>
+<symbol id="i-bag" viewBox="0 0 24 24"><path d="M4 9h16l-1 12H5L4 9Zm4 0V6a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5a5.6 5.6 0 0 0-7.9 0l-.9.9-.9-.9a5.6 5.6 0 1 0-7.9 8l.9.8L12 22l7.9-8.2.9-.9a5.6 5.6 0 0 0 0-7.9Z"/></symbol>
+<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.7 8.3-2.4 5-5 2.4 2.4-5z"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="7"/><path d="m16 16 5 5"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.4"/><path d="M19 13.3a7 7 0 0 0 0-2.6l2-1.5-2-3.5-2.3 1a9 9 0 0 0-2.2-1.3L14 3h-4l-.5 2.4a9 9 0 0 0-2.2 1.3l-2.3-1-2 3.5 2 1.5a7 7 0 0 0 0 2.6l-2 1.5 2 3.5 2.3-1a9 9 0 0 0 2.2 1.3L10 21h4l.5-2.4a9 9 0 0 0 2.2-1.3l2.3 1 2-3.5z"/></symbol>
+<symbol id="i-volume" viewBox="0 0 24 24"><path d="M3 9h5l5-5v16l-5-5H3zM17 9a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol><symbol id="i-close" viewBox="0 0 24 24"><path d="m5 5 14 14M19 5 5 19"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0m-7 7v4m-4 0h8"/></symbol>
+<symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 14v-3a9 9 0 0 1 18 0v3m-18 0h4v7H5a2 2 0 0 1-2-2zm14 0h4v5a2 2 0 0 1-2 2h-2z"/></symbol>
+<symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 22h8m-4-4v4"/></symbol>
+<symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+<symbol id="i-phone-off" viewBox="0 0 24 24"><path d="M3 9c5-5 13-5 18 0l-3 4-3-2v5h-6v-5l-3 2z"/></symbol>
+<symbol id="i-grip" viewBox="0 0 24 24"><circle cx="8" cy="5" r="1"/><circle cx="16" cy="5" r="1"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/><circle cx="8" cy="19" r="1"/><circle cx="16" cy="19" r="1"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol><symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7M8 12h13"/></symbol><symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="m16 3 5 5-3 1-4 5-1 7-3-7-5-4 6-1 4-4z"/></symbol>
+</svg>
+<script src="app.js"></script>
+</body>
+</html>

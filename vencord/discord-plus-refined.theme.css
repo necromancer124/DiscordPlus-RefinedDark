@@ -1,0 +1,75 @@
+/**
+ * @name Discord+ Refined Dark
+ * @description Colour-only version of the Discord+ theme: matte charcoal with a restrained violet accent.
+ * @author Discord+
+ * @version 1.0.0
+ *
+ * Use this as Vencord QuickCSS or a local theme if you want the colours WITHOUT the Discord+ plugin.
+ * If the DiscordPlus plugin is enabled you don't need this; the plugin applies the same theme itself.
+ * Generated from section 2 of vencord/userplugins/discordPlus/style.css; keep the two in sync.
+ */
+:is(.theme-dark, .theme-darker, .theme-midnight) {
+    --brand-500: #7478f8;
+    --brand-560: color-mix(in srgb, #7478f8 88%, #000);
+    --brand-experiment: #7478f8;
+    --control-brand-foreground: #7478f8;
+
+    --background-primary: #15161c;
+    --background-secondary: #111218;
+    --background-secondary-alt: #1b1c24;
+    --background-tertiary: #0d0e13;
+    --background-floating: #1c1d25;
+    --background-nested-floating: #1c1d25;
+    --background-base-lowest: #0d0e13;
+    --background-base-lower: #111218;
+    --background-base-low: #15161c;
+    --background-surface-high: #1b1c24;
+    --background-surface-higher: #1c1d25;
+    --background-surface-highest: #252630;
+    --bg-base-primary: #15161c;
+    --bg-base-secondary: #111218;
+    --bg-base-tertiary: #0d0e13;
+    --chat-background: #15161c;
+    --modal-background: #1b1c24;
+    --channeltextarea-background: #1e1f28;
+
+    --background-modifier-hover: rgb(116 120 248 / 0.06);
+    --background-modifier-active: rgb(116 120 248 / 0.1);
+    --background-modifier-selected: rgb(116 120 248 / 0.14);
+
+    --border-faint: #22232c;
+    --border-subtle: #2a2b35;
+    --border-normal: #34364a;
+
+    --text-normal: #f1f1f5;
+    --text-default: #f1f1f5;
+    --text-muted: #9b9dae;
+    --text-subtle: #a1a3b2;
+    --header-primary: #f1f1f5;
+    --header-secondary: #a1a3b2;
+    --interactive-normal: #b1b2c1;
+    --interactive-hover: #f1f1f5;
+    --interactive-active: #f1f1f5;
+    --interactive-muted: #4f5160;
+
+    --status-positive: #43b581;
+    --status-warning: #f0b74a;
+    --status-danger: #f04755;
+
+    --scrollbar-auto-thumb: #34364a;
+    --scrollbar-thin-thumb: #34364a;
+    --scrollbar-auto-track: transparent;
+}
+
+/* Small native refinements: rounder composer, calmer message hover, consistent transitions. */
+:is([class^="channelTextArea_"], [class*=" channelTextArea_"]) :is([class^="scrollableContainer_"], [class*=" scrollableContainer_"]) {
+    border-radius: 10px;
+}
+
+:is(button, [role="button"], input, textarea) {
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :is(button, [role="button"], input, textarea) { transition: none; }
+}

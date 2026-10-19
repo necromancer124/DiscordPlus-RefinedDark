@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en" class="theme-dark">
+<head>
+<meta charset="utf-8">
+<title>Discord+ plugin harness</title>
+<link rel="stylesheet" href="/plugin/style.css">
+<style>
+  /* A rough stand-in for Discord's DOM, using the same class-name shapes the plugin looks for. */
+  html, body { margin: 0; height: 100%; background: var(--background-tertiary, #1e1f22); color: var(--text-normal, #dbdee1); font-family: "gg sans", "Segoe UI", sans-serif; overflow: hidden; }
+  :root { --background-tertiary: #1e1f22; --background-secondary: #2b2d31; --background-primary: #313338; --text-normal: #dbdee1; --text-muted: #949ba4; }
+  #app-mount { position: absolute; inset: 0; }
+  .layers_x1 { position: absolute; inset: 0; }
+  .layer_x1 { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  .bar_x1 { height: 30px; flex: none; background: var(--background-tertiary); display: flex; align-items: center; justify-content: flex-end; padding: 0 10px; font-size: 12px; color: var(--text-muted); }
+  .base_x1 { flex: 1; display: flex; min-height: 0; }
+  nav.guilds_x1 { width: 72px; flex: none; background: var(--background-tertiary); display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 8px; }
+  nav.guilds_x1 i { width: 48px; height: 48px; border-radius: 16px; background: #3a3c45; display: block; }
+  nav.guilds_x1 i:nth-child(1) { background: #5865f2; }
+  nav.guilds_x1 i:nth-child(2) { background: linear-gradient(135deg, #43b581, #1f6e4c); }
+  nav.guilds_x1 i:nth-child(3) { background: linear-gradient(135deg, #f0b74a, #b2701a); }
+  nav.guilds_x1 i:nth-child(4) { background: linear-gradient(135deg, #c86df0, #6b2a99); }
+  nav.guilds_x1 i:nth-child(5) { background: linear-gradient(135deg, #4fb3d9, #1e5f80); }
+  nav.guilds_x1 i:nth-child(6) { background: linear-gradient(135deg, #f08a4a, #a3431a); }
+  .content_x1 { flex: 1; display: flex; min-width: 0; }
+  .outer-sidebar { display: flex; position: relative; flex: none; }
+  .sidebar_x1 { width: 240px; flex: none; background: var(--background-secondary); display: flex; flex-direction: column; }
+  section.panels_x1 { position: absolute; left: 8px; right: 8px; bottom: 8px; border-radius: 8px; }
+  nav.privateChannels_x1 { flex: 1; padding: 10px; color: var(--text-muted); font-size: 14px; }
+  section.panels_x1 { height: 52px; background: #232428; display: flex; align-items: center; padding: 0 10px; font-size: 13px; }
+  .page_x1 { flex: 1; background: var(--background-primary); padding: 20px; display: flex; }
+  .page_x1 .main { flex: 1; } .nowPlayingColumn_x1 { width: 300px; border-left: 1px solid #3f4147; padding-left: 16px; color: var(--text-muted); }
+  #mock-layer { position: fixed; z-index: 1002; }
+  .mock-menu { background: #111214; border-radius: 8px; padding: 6px; min-width: 190px; box-shadow: 0 8px 24px #000a; display: flex; flex-direction: column; }
+  .mock-menu-item { all: unset; padding: 7px 9px; border-radius: 4px; font-size: 14px; color: #dbdee1; cursor: pointer; }
+  .mock-menu-item:hover { background: #5865f2; color: #fff; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+  window.VencordCreateElement = React.createElement;
+  window.VencordFragment = React.Fragment;
+  window.__dpLog = []; window.__dpErrors = [];
+  window.addEventListener("error", e => window.__dpErrors.push(String(e.message)));
+  // ?scene=… sets up a state for screenshots (see the module script below).
+  window.__scene = new URLSearchParams(location.search).get("scene");
+  history.replaceState({}, "", "/channels/@me");
+  // The plugin only accepts https avatar URLs; point the fake host at local files.
+  new MutationObserver(() => document.querySelectorAll('img[src^="https://localhost.avatars/"]').forEach(img => { img.src = img.src.replace("https://localhost.avatars/", "/avatars/"); }))
+    .observe(document.documentElement, { subtree: true, childList: true });
+</script>
+<script type="importmap">
+{ "imports": {
+  "@webpack/common": "/mocks/common.js",
+  "@webpack": "/mocks/misc.js",
+  "@api/Settings": "/mocks/misc.js",
+  "@api/PluginManager": "/mocks/misc.js",
+  "@components/settings": "/mocks/misc.js",
+  "@components/ErrorBoundary": "/mocks/ErrorBoundary.js",
+  "@utils/types": "/mocks/misc.js",
+  "@utils/discord": "/mocks/misc.js",
+  "@vencord/discord-types/enums": "/mocks/misc.js"
+} }
+</script>
+</head>
+<body>
+<div id="app-mount">
+  <div class="layers_x1"><div class="layer_x1">
+    <div class="bar_x1">— &nbsp; ▢ &nbsp; ✕</div>
+    <div class="base_x1">
+      <div class="content_x1">
+        <!-- Like current Discord: the server rail lives INSIDE the sidebar container, next to the DM/channel list. -->
+        <div class="sidebar_x2 outer-sidebar">
+        <nav class="guilds_x1" aria-label="Servers sidebar"><i></i><i></i><i></i><i></i><i></i><i></i></nav>
+        <div class="sidebar_x1 sidebarList_x1"><nav class="privateChannels_x1">Native DM list…</nav></div>
+        <section class="panels_x1"><div class="wrapper_x1">
+          <div class="questPromoContainer_x1"><div class="questPromo_x1">Ready when you are... Play Now</div></div>
+          <div class="rtcConnection_x1">Voice Connected <button aria-label="Share Your Screen" onclick="window.__dpLog.push('native share clicked')">Share</button> <button aria-label="Disconnect">✕</button></div>
+          <div class="container_userArea">Native user row <button aria-label="Mute">🎤</button> <button aria-label="User Settings">⚙</button></div>
+        </div></section>
+        </div>
+        <div class="page_x1"><div class="main">Native Friends page</div><div class="nowPlayingColumn_x1">Active Now</div></div>
+      </div>
+    </div>
+  </div></div>
+</div>
+<div id="mock-layer" hidden></div>
+<!-- Stand-in for Discord's picture-in-picture stream window (floats top-right until docked). -->
+<div class="pictureInPicture_x1" style="position:fixed;inset:0;pointer-events:none;z-index:1002">
+  <div class="pictureInPictureWindow_x1" style="position:absolute;right:20px;top:20px;width:320px;height:180px;pointer-events:auto;background:#000;border-radius:6px;overflow:hidden">
+    <!-- An illustrated "game" frame (no people) standing in for a live screen share. -->
+    <svg class="pictureInPictureVideo_x1" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+      <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2d6e"/><stop offset=".6" stop-color="#c0587e"/><stop offset="1" stop-color="#f6b26b"/></linearGradient></defs>
+      <rect width="320" height="180" fill="url(#sky)"/>
+      <circle cx="232" cy="96" r="26" fill="#ffd89a"/>
+      <path d="M0 132 60 84l46 34 52-52 62 58 40-30 60 50v36H0Z" fill="#3b2d58"/>
+      <path d="M0 150 70 118l58 26 64-34 56 30 72-22v62H0Z" fill="#221a38"/>
+      <rect x="8" y="8" width="64" height="8" rx="4" fill="#ffffff55"/><rect x="8" y="20" width="40" height="6" rx="3" fill="#ffffff33"/>
+    </svg>
+  </div>
+</div>
+<script type="module">
+  const plugin = (await import("/plugin/index.js")).default;
+  window.__plugin = plugin;
+  plugin.start();
+
+  // Screenshot scenes.
+  const q = s => document.querySelector(s);
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const scene = window.__scene;
+  if (scene) {
+    await wait(900);
+    const nav = label => [...document.querySelectorAll(".dp-nav-item")].find(b => b.textContent.includes(label))?.click();
+    // Scenes without the call window: drop the stand-in stream window so it doesn't float over the shot.
+    if (!["home", "call-list"].includes(scene)) q(".pictureInPictureWindow_x1")?.remove();
+    if (scene === "home") {
+      const call = q(".dp-call"); if (call) { call.style.width = "460px"; call.style.top = "96px"; }
+    } else if (scene === "pending") {
+      window.__settings.callHidden = true;
+      [...document.querySelectorAll(".dp-filter")].find(b => b.textContent.startsWith("Pending"))?.click();
+    } else if (scene === "messages") {
+      window.__settings.callHidden = true;
+      nav("Messages");
+    } else if (scene === "call-list") {
+      const call = q(".dp-call"); if (call) { call.style.width = "380px"; call.style.height = "700px"; call.style.top = "96px"; }
+    } else if (scene === "menu") {
+      window.__settings.callHidden = true;
+      const card = [...document.querySelectorAll(".dp-card")][1];
+      const r = card.getBoundingClientRect();
+      card.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, clientX: r.left + 160, clientY: r.top + 40 }));
+    }
+  }
+</script>
+</body>
+</html>

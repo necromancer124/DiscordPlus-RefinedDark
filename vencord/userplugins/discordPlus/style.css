@@ -1,0 +1,951 @@
+/*
+ * Discord+ Refined Dark — plugin stylesheet (Vencord managed style: removed when the plugin is disabled).
+ * Values mirror preview/styles.css and DESIGN.md.
+ *
+ * Sections: 1 tokens · 2 vanilla+ theme · 3 native layout switches · 4 shared · 5 header
+ *           6 home & friends grid · 7 messages · 8 user dock · 9 call manager · 10 quest chip · 11 motion
+ */
+
+/* ── 1. Tokens ─────────────────────────────────────────────────────────── */
+body {
+    --dp-bg: #101116;
+    --dp-surface: #15161c;
+    --dp-card: #191a20;
+    --dp-raised: #1c1d25;
+    --dp-hover: #252630;
+    --dp-line: #2a2b35;
+    --dp-line-strong: #383b4d;
+    --dp-text: #f1f1f5;
+    --dp-secondary: #a1a3b2;
+    --dp-muted: #737685;
+    --dp-accent: #7478f8;
+    --dp-accent-soft: color-mix(in srgb, var(--dp-accent) 15%, transparent);
+    --dp-green: #43b581;
+    --dp-yellow: #f0b74a;
+    --dp-red: #f04755;
+    --dp-radius: 11px;
+    --dp-duration: 160ms;
+    --dp-header-h: 52px;
+}
+
+/* ── 2. "Vanilla+" theme: Discord's own variables, re-tuned. Only applied with body.dp-theme. ── */
+html:is(.theme-dark, .theme-darker, .theme-midnight) body.dp-theme,
+body.dp-theme :is(.theme-dark, .theme-darker, .theme-midnight) {
+    --brand-500: var(--dp-accent);
+    --brand-560: color-mix(in srgb, var(--dp-accent) 88%, #000);
+    --brand-experiment: var(--dp-accent);
+    --control-brand-foreground: var(--dp-accent);
+
+    --background-primary: #15161c;
+    --background-secondary: #111218;
+    --background-secondary-alt: #1b1c24;
+    --background-tertiary: #0d0e13;
+    --background-floating: #1c1d25;
+    --background-nested-floating: #1c1d25;
+    --background-base-lowest: #0d0e13;
+    --background-base-lower: #111218;
+    --background-base-low: #15161c;
+    --background-surface-high: #1b1c24;
+    --background-surface-higher: #1c1d25;
+    --background-surface-highest: #252630;
+    --bg-base-primary: #15161c;
+    --bg-base-secondary: #111218;
+    --bg-base-tertiary: #0d0e13;
+    --chat-background: #15161c;
+    --modal-background: #1b1c24;
+    --channeltextarea-background: #1e1f28;
+
+    --background-modifier-hover: rgb(116 120 248 / 0.06);
+    --background-modifier-active: rgb(116 120 248 / 0.1);
+    --background-modifier-selected: rgb(116 120 248 / 0.14);
+
+    --border-faint: #22232c;
+    --border-subtle: #2a2b35;
+    --border-normal: #34364a;
+
+    --text-normal: #f1f1f5;
+    --text-default: #f1f1f5;
+    --text-muted: #9b9dae;
+    --text-subtle: #a1a3b2;
+    --header-primary: #f1f1f5;
+    --header-secondary: #a1a3b2;
+    --interactive-normal: #b1b2c1;
+    --interactive-hover: #f1f1f5;
+    --interactive-active: #f1f1f5;
+    --interactive-muted: #4f5160;
+
+    --status-positive: #43b581;
+    --status-warning: #f0b74a;
+    --status-danger: #f04755;
+
+    --scrollbar-auto-thumb: #34364a;
+    --scrollbar-thin-thumb: #34364a;
+    --scrollbar-auto-track: transparent;
+}
+
+/* Small native refinements: rounder composer, calmer message hover, consistent transitions. */
+body.dp-theme :is([class^="channelTextArea_"], [class*=" channelTextArea_"]) :is([class^="scrollableContainer_"], [class*=" scrollableContainer_"]) {
+    border-radius: 10px;
+}
+
+body.dp-theme :is(button, [role="button"], input, textarea) {
+    transition: background-color var(--dp-duration) ease, border-color var(--dp-duration) ease, color var(--dp-duration) ease;
+}
+
+/* ── 3. Native layout switches (each one is a class Discord+ adds and removes) ── */
+.dp-pushed {
+    padding-top: var(--dp-header-h) !important;
+    box-sizing: border-box !important;
+}
+
+body.dp-hide-dm-sidebar .dp-dm-column {
+    display: none !important;
+}
+
+body.dp-hide-native-panel :is(section[class^="panels_"], section[class*=" panels_"]) {
+    display: none !important;
+}
+
+/* Discord's Friends / DM column (Find a conversation, Friends, Nitro, Shop, DM list): the header replaces it.
+   The element is chosen in JS (layout.ts) so it never includes the server list. */
+body.dp-hide-dm-column .dp-dm-column {
+    display: none !important;
+}
+
+/* Whole sections of the bottom-left panel removed by tidyPanels() (quest card, user row). */
+.dp-panel-hidden {
+    display: none !important;
+}
+
+/* A stream you stopped watching from the call manager: hide Discord's window until it goes away. */
+body.dp-pip-stopped :is([class^="pictureInPictureWindow_"], [class*=" pictureInPictureWindow_"]) {
+    display: none !important;
+}
+
+/* Discord's picture-in-picture stream window, docked into the call manager's stream slot. */
+body.dp-pip-docked :is([class^="pictureInPictureWindow_"], [class*=" pictureInPictureWindow_"]) {
+    position: fixed !important;
+    inset: auto !important;
+    left: var(--dp-pip-x) !important;
+    top: var(--dp-pip-y) !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 0 !important;
+    transform-origin: 0 0 !important;
+    transform: scale(var(--dp-pip-scale, 1)) !important;
+    border-radius: 9px !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+    z-index: 1001 !important;
+}
+
+/* While a full-screen Discord layer (User Settings, etc.) is open, step aside. */
+body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [class*=" layer_"])) :is(.dp-header, .dp-home) {
+    display: none;
+}
+
+/* Stacking: Discord's page content < Discord+ (998-1000) < Discord's popouts, menus and modals (layer container, ~1002). */
+
+/* ── 4. Shared ─────────────────────────────────────────────────────────── */
+#vc-discordplus-root {
+    color: var(--dp-text);
+    font-family: var(--font-primary, "gg sans", "Noto Sans", system-ui, sans-serif);
+}
+
+/* Zero-specificity reset so every component rule below wins without !important. */
+:where(#vc-discordplus-root) :where(button) {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+#vc-discordplus-root :is(button, [role="button"], input, select):focus-visible {
+    outline: 2px solid var(--dp-accent);
+    outline-offset: 2px;
+}
+
+.dp-icon { flex: none; display: block; }
+
+.dp-icon-btn {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: var(--dp-secondary);
+    transition: background-color var(--dp-duration) ease, color var(--dp-duration) ease;
+}
+
+.dp-icon-btn:hover { background: var(--dp-hover); color: var(--dp-text); }
+.dp-icon-btn.dp-active { color: var(--dp-accent); background: var(--dp-accent-soft); }
+.dp-icon-btn.dp-danger { color: var(--dp-red); }
+
+.dp-muted { color: var(--dp-muted); font-size: 13px; }
+
+.dp-avatar {
+    position: relative;
+    display: block;
+    flex: none;
+    border-radius: 50%;
+    background: #323543;
+    color: #fff;
+}
+
+.dp-avatar img,
+.dp-avatar-fallback {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    font-weight: 700;
+}
+
+.dp-avatar.dp-speaking { box-shadow: 0 0 0 2px var(--dp-green); }
+
+.dp-presence {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 10px;
+    height: 10px;
+    background: #646675;
+    border: 3px solid var(--dp-presence-ring, var(--dp-card));
+    border-radius: 50%;
+}
+
+.dp-online { background: var(--dp-green); }
+.dp-idle { background: var(--dp-yellow); }
+.dp-dnd { background: var(--dp-red); }
+
+.dp-pill {
+    flex: none;
+    margin-left: auto;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 650;
+    color: #fff;
+    background: var(--dp-accent);
+    border-radius: 6px;
+}
+
+.dp-time { flex: none; margin-left: auto; font-size: 10px; color: #707380; white-space: nowrap; }
+
+.dp-tag {
+    margin-left: 7px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--dp-secondary);
+    background: #292b36;
+    border-radius: 5px;
+}
+
+.dp-empty { margin: 28px 0; color: var(--dp-muted); font-size: 13px; }
+
+/* ── 5. Header ─────────────────────────────────────────────────────────── */
+.dp-header {
+    position: fixed;
+    right: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    /* Same surface as Discord's title bar and server rail, so the top reads as one bar. */
+    background: var(--background-base-lowest, var(--background-tertiary, #0d0e13));
+    box-sizing: border-box;
+}
+
+.dp-nav { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; }
+
+.dp-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--dp-secondary) !important;
+    border-radius: 8px;
+    transition: background-color var(--dp-duration) ease, color var(--dp-duration) ease;
+}
+
+.dp-nav-item:hover { background: #242637 !important; color: var(--dp-text) !important; }
+.dp-nav-item.dp-active { background: #242637 !important; color: var(--dp-text) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dp-accent) 35%, transparent); }
+.dp-nav-item.dp-active .dp-icon { color: var(--dp-accent); }
+
+.dp-nav-badge {
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--dp-red);
+    border-radius: 8px;
+}
+
+.dp-header-search {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: 1 1 220px;
+    max-width: 380px;
+    min-width: 140px;
+    height: 34px;
+    margin-left: auto;
+    padding: 0 12px;
+    color: var(--dp-muted);
+    background: #101116;
+    border: 1px solid var(--dp-line);
+    border-radius: 9px;
+}
+
+.dp-header-search:focus-within { border-color: var(--dp-accent); }
+
+.dp-header-search input {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    color: var(--dp-text);
+    background: transparent;
+    border: 0;
+    outline: 0;
+}
+
+.dp-header-search input::placeholder { color: var(--dp-muted); }
+.dp-header-actions { display: flex; gap: 4px; }
+
+/* Call pill (only while in a voice call) */
+.dp-call-pill {
+    display: flex;
+    flex: none;
+    align-items: center;
+    max-width: 230px;
+    height: 34px;
+    color: var(--dp-text);
+    background: color-mix(in srgb, var(--dp-green) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--dp-green) 45%, transparent);
+    border-radius: 9px;
+    overflow: hidden;
+}
+
+.dp-call-pill.dp-active { background: color-mix(in srgb, var(--dp-green) 22%, transparent); }
+
+.dp-call-pill-main {
+    display: flex !important;
+    flex: 1;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    height: 100%;
+    padding: 0 8px 0 10px !important;
+}
+
+.dp-call-pill-main:hover,
+.dp-call-pill-return:hover { background: color-mix(in srgb, var(--dp-green) 18%, transparent) !important; }
+.dp-call-pill-icon { display: grid; color: var(--dp-green); }
+.dp-call-pill-name { overflow: hidden; font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.dp-call-pill-time { flex: none; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--dp-secondary); }
+
+.dp-call-pill-return {
+    display: grid !important;
+    place-items: center;
+    width: 34px;
+    height: 100%;
+    color: var(--dp-green) !important;
+    border-left: 1px solid color-mix(in srgb, var(--dp-green) 35%, transparent) !important;
+}
+
+
+
+.dp-nav-item { position: relative; }
+
+.dp-nav-dot {
+    width: 7px;
+    height: 7px;
+    margin-left: -3px;
+    background: var(--dp-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--background-base-lowest, #0d0e13);
+}
+
+.dp-header-user {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding-left: 10px;
+    margin-left: 2px;
+    border-left: 1px solid var(--dp-line);
+    --dp-presence-ring: var(--background-base-lowest, #0d0e13);
+}
+
+.dp-header-me { display: grid !important; place-items: center; width: 36px; height: 36px; border-radius: 50%; }
+.dp-header-me:hover { background: var(--dp-hover) !important; }
+.dp-header-user .dp-presence { width: 8px; height: 8px; border-width: 2px; }
+
+/* ── 6. Home & friends grid ────────────────────────────────────────────── */
+.dp-home {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    z-index: 998;
+    overflow-y: auto;
+    background: var(--dp-surface);
+    border-top: 1px solid var(--dp-line);
+    border-left: 1px solid var(--dp-line);
+    border-top-left-radius: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: #34364a transparent;
+}
+
+.dp-home-inner { padding: 26px 32px 120px; max-width: 1800px; }
+
+.dp-page-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; color: var(--dp-secondary); }
+.dp-page-head h1 { margin: 0; font-size: 22px; font-weight: 650; letter-spacing: -0.4px; color: var(--dp-text); }
+
+.dp-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 6px; }
+.dp-filters { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.dp-filter {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 64px;
+    min-height: 34px;
+    padding: 0 12px !important;
+    font-size: 14px;
+    color: var(--dp-secondary) !important;
+    border: 1px solid var(--dp-line) !important;
+    border-radius: 8px;
+    transition: background-color var(--dp-duration) ease, border-color var(--dp-duration) ease, color var(--dp-duration) ease;
+}
+
+.dp-filter:hover { background: var(--dp-hover) !important; color: var(--dp-text) !important; }
+
+.dp-filter.dp-active {
+    color: var(--dp-text) !important;
+    background: var(--dp-accent-soft) !important;
+    border-color: var(--dp-accent) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dp-accent) 32%, transparent);
+}
+
+.dp-count { padding: 1px 5px; font-size: 11px; background: #292b36; border-radius: 6px; }
+
+.dp-select {
+    height: 34px;
+    margin-left: auto;
+    padding: 0 10px;
+    font-size: 13px;
+    color: var(--dp-secondary);
+    background: #131419;
+    border: 1px solid var(--dp-line);
+    border-radius: 8px;
+}
+
+.dp-section-title { margin: 22px 0 11px; font-size: 13px; font-weight: 600; color: var(--dp-secondary); }
+
+.dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr)); gap: 11px; }
+.dp-compact .dp-grid { grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); gap: 8px; }
+
+.dp-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    min-height: 76px;
+    padding: 13px 12px 12px;
+    overflow: hidden;
+    text-align: left;
+    background: var(--dp-card);
+    border: 1px solid #2a2c36;
+    border-radius: var(--dp-radius);
+    cursor: pointer;
+    --dp-presence-ring: var(--dp-card);
+    transition: background-color var(--dp-duration) ease, border-color var(--dp-duration) ease;
+}
+
+.dp-card:hover { background: #20212a; border-color: #474958; --dp-presence-ring: #20212a; }
+.dp-card.dp-has-unread { background: #1e202c; border-color: #484872; --dp-presence-ring: #1e202c; }
+.dp-compact .dp-card { gap: 8px; min-height: 0; padding: 9px 10px; }
+
+.dp-card-top { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.dp-card-names { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
+
+.dp-card-name,
+.dp-card-sub,
+.dp-card-preview-text,
+.dp-row-title,
+.dp-row-sub {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dp-card-name { display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 600; color: var(--dp-text); }
+.dp-card-sub { font-size: 12px; color: var(--dp-muted); }
+.dp-card.dp-offline .dp-card-name { color: #b3b4bc; }
+.dp-fav { color: var(--dp-accent); }
+
+.dp-card-menu {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    color: var(--dp-muted) !important;
+    opacity: 0;
+    transition: opacity var(--dp-duration) ease, background-color var(--dp-duration) ease;
+}
+
+.dp-card:hover .dp-card-menu,
+.dp-card:focus-within .dp-card-menu { opacity: 1; }
+.dp-card-menu:hover { background: var(--dp-hover) !important; color: var(--dp-text) !important; }
+
+/* Brief accent glow on a card that just received a message. */
+.dp-card-flash {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    animation: dp-card-flash 1.6s ease-out forwards;
+}
+
+@keyframes dp-card-flash {
+    0% { background: color-mix(in srgb, var(--dp-accent) 22%, transparent); box-shadow: inset 0 0 0 1px var(--dp-accent); }
+    100% { background: transparent; box-shadow: inset 0 0 0 1px transparent; }
+}
+
+.dp-request-actions { display: flex; gap: 8px; }
+
+.dp-request-btn {
+    display: flex !important;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 32px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background-color var(--dp-duration) ease, color var(--dp-duration) ease;
+}
+
+.dp-accept { color: #fff !important; background: var(--dp-green) !important; }
+.dp-accept:hover { background: #3ca374 !important; }
+.dp-deny { color: var(--dp-secondary) !important; background: #292b36 !important; }
+.dp-deny:hover { color: #fff !important; background: var(--dp-red) !important; }
+
+.dp-card-preview {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding-top: 9px;
+    font-size: 12px;
+    color: #a5a7b8;
+    border-top: 1px solid #2a2c35;
+}
+
+.dp-card-preview {
+    margin: 0 -6px -6px;
+    width: calc(100% + 12px);
+    padding: 9px 6px 6px;
+    text-align: left;
+    border-radius: 0 0 8px 8px;
+    transition: background-color var(--dp-duration) ease, color var(--dp-duration) ease;
+}
+
+.dp-card-preview:hover { background: var(--dp-accent-soft); color: var(--dp-text); }
+.dp-card-preview:hover .dp-icon { color: var(--dp-accent); }
+.dp-card-preview .dp-icon { color: #787b8a; }
+.dp-card-preview-text { flex: 1; min-width: 0; }
+.dp-compact .dp-card-preview { padding-top: 6px; }
+
+/* ── 7. Messages list ─────────────────────────────────────────────────── */
+.dp-list { display: flex; flex-direction: column; gap: 4px; max-width: 980px; }
+
+.dp-row {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px !important;
+    text-align: left;
+    border: 1px solid transparent !important;
+    border-radius: 10px;
+    --dp-presence-ring: var(--dp-surface);
+    transition: background-color var(--dp-duration) ease, border-color var(--dp-duration) ease;
+}
+
+.dp-row:hover { background: var(--dp-card) !important; border-color: #2a2c36 !important; --dp-presence-ring: var(--dp-card); }
+.dp-row-text { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
+.dp-row-title { display: flex; align-items: center; font-size: 14px; font-weight: 600; }
+.dp-row-sub { font-size: 12px; color: var(--dp-muted); }
+.dp-row.dp-has-unread .dp-row-sub { color: var(--dp-secondary); }
+
+/* ── 8. User dock ─────────────────────────────────────────────────────── */
+.dp-dock {
+    position: fixed;
+    left: 84px;
+    bottom: 14px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 56px;
+    padding: 8px;
+    background: #20212b;
+    border: 1px solid var(--dp-line-strong);
+    border-radius: 12px;
+    box-shadow: 0 8px 27px #0008;
+    box-sizing: border-box;
+    --dp-presence-ring: #20212b;
+}
+
+.dp-grip { display: grid; place-items: center; width: 14px; height: 36px; color: #676978; cursor: grab; touch-action: none; }
+.dp-dragging, .dp-dragging .dp-grip, .dp-dragging .dp-call-head { cursor: grabbing; user-select: none; }
+
+.dp-dock-user {
+    display: flex !important;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    max-width: 150px;
+    padding: 3px 8px 3px 3px !important;
+    text-align: left;
+    border-radius: 8px;
+}
+
+.dp-dock-user:hover { background: var(--dp-hover) !important; }
+.dp-dock-names { display: flex; flex-direction: column; min-width: 0; }
+.dp-dock-name { overflow: hidden; font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.dp-dock-tag { overflow: hidden; font-size: 11px; color: var(--dp-muted); text-overflow: ellipsis; white-space: nowrap; }
+.dp-dock .dp-icon-btn { width: 32px; height: 34px; }
+
+/* ── 9. Call manager ──────────────────────────────────────────────────── */
+.dp-call {
+    position: fixed;
+    right: 22px;
+    top: 110px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    width: 386px;
+    min-width: 300px;
+    max-width: calc(100vw - 100px);
+    min-height: 220px;
+    max-height: calc(100vh - 40px);
+    overflow: hidden;
+    resize: both;
+    background: var(--dp-raised);
+    border: 1px solid #373a49;
+    border-radius: 13px;
+    box-shadow: 0 13px 38px #0009;
+    box-sizing: border-box;
+}
+
+.dp-call-head { display: flex; flex: none; align-items: center; gap: 10px; padding: 12px 12px 10px; cursor: grab; touch-action: none; }
+.dp-call:has(.dp-call-stream) { min-height: 330px; }
+/* Members hidden: the stream takes their space and the window may get smaller. */
+.dp-call.dp-members-hidden { min-height: 250px; }
+.dp-members-hidden .dp-call-stream { flex: 1 1 auto; }
+.dp-members-toggle { padding: 3px 7px !important; }
+.dp-members-toggle.dp-active { color: #fff; background: var(--dp-accent) !important; }
+
+.dp-call-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    color: var(--dp-accent);
+    background: var(--dp-accent-soft);
+    border-radius: 9px;
+}
+
+.dp-call-text { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.dp-call-text strong { overflow: hidden; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.dp-call-text small { overflow: hidden; font-size: 12px; color: var(--dp-muted); text-overflow: ellipsis; white-space: nowrap; }
+
+.dp-call-people {
+    display: grid;
+    flex: 1;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    align-content: start;
+    gap: 8px;
+    min-height: 0;
+    padding: 0 12px;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.dp-list-mode .dp-call-people { grid-template-columns: 1fr; gap: 4px; }
+
+/* List mode: one compact row per participant. */
+.dp-tile.dp-tile-row {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    min-height: 0;
+    padding: 6px 10px !important;
+}
+
+.dp-tile-row .dp-tile-name { flex: 1; width: auto; text-align: left; }
+.dp-tile-row .dp-live-tile { position: static; flex: none; }
+.dp-tile-row .dp-tile-watch { position: static; flex: none; width: 24px; height: 24px; box-shadow: none; }
+.dp-tile-row .dp-tile-state { position: static; flex: none; }
+
+.dp-tile {
+    position: relative;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    min-height: 102px;
+    padding: 10px 6px !important;
+    background: #22242d !important;
+    border: 1px solid #30333c !important;
+    border-radius: 9px;
+    transition: border-color var(--dp-duration) ease, background-color var(--dp-duration) ease;
+}
+
+.dp-tile:hover { background: #2a2c36 !important; border-color: #797b90 !important; }
+.dp-tile.dp-talking { border-color: var(--dp-green) !important; box-shadow: inset 0 0 0 1px #43b58155; }
+.dp-tile-name { width: 100%; overflow: hidden; font-size: 12px; font-weight: 600; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.dp-tile-sub { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--dp-secondary); }
+
+.dp-tile-state {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    color: var(--dp-red);
+    background: #15161c;
+    border-radius: 50%;
+}
+
+.dp-call-controls { display: flex; flex: none; align-items: center; gap: 8px; margin-top: auto; padding: 12px; }
+
+.dp-return {
+    display: flex !important;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 36px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #292b36 !important;
+    border: 1px solid #3a3c4b !important;
+    border-radius: 9px;
+}
+
+.dp-return:hover { background: #32343f !important; }
+
+.dp-hangup {
+    display: grid !important;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 36px;
+    color: #fff !important;
+    background: var(--dp-red) !important;
+    border-radius: 10px;
+}
+
+.dp-hangup:hover { background: #ff5a66 !important; }
+
+.dp-call-mini {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 8px;
+    resize: none;
+}
+
+.dp-call-mini-info { display: flex; align-items: center; gap: 10px; min-width: 0; max-width: 240px; padding-right: 4px; cursor: grab; touch-action: none; }
+.dp-avatar-stack { display: flex; }
+.dp-avatar-stack .dp-avatar { box-shadow: 0 0 0 2px var(--dp-raised); }
+.dp-avatar-stack .dp-avatar + .dp-avatar { margin-left: -9px; }
+.dp-avatar-stack .dp-avatar.dp-speaking { box-shadow: 0 0 0 2px var(--dp-green); }
+
+.dp-live {
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #fff;
+    background: var(--dp-red);
+    border-radius: 4px;
+}
+
+.dp-live-tile { position: absolute; top: 7px; left: 7px; }
+
+.dp-call-stream { display: flex; flex: 0 1 auto; flex-direction: column; gap: 6px; min-height: 120px; padding: 0 12px 8px; }
+.dp-call-stream .dp-stream { flex: 1 1 auto; min-height: 80px; max-height: 100%; }
+/* Next to a stream, members keep at least one full tile (grid) or row (list) visible. */
+/* `auto` basis: sized by content when the window has no fixed height yet, shrinks when it does. */
+.dp-call-people.dp-has-stream { flex: 1 1 auto; min-height: 126px; }
+.dp-list-mode .dp-call-people.dp-has-stream { min-height: 48px; }
+.dp-call:has(.dp-call-stream):not(.dp-list-mode) { min-height: 410px; }
+
+.dp-tile-watch {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: grid !important;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    color: #fff !important;
+    background: var(--dp-accent) !important;
+    border-radius: 7px;
+    box-shadow: 0 2px 8px #0006;
+}
+
+.dp-tile-watch:hover { filter: brightness(1.15); }
+.dp-watch-btn { color: var(--dp-accent) !important; }
+
+.dp-stream-head { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 12px; }
+.dp-stream-head .dp-stream-name { flex: 1; }
+
+.dp-stream-open {
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px !important;
+    font-size: 12px;
+    font-weight: 600;
+    background: #292b36 !important;
+    border-radius: 6px;
+}
+
+.dp-stream-open:hover { background: var(--dp-accent) !important; }
+.dp-stream-stop:hover { background: var(--dp-red) !important; }
+
+.dp-stream {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #0d0e13;
+    border: 1px solid #30333c;
+    border-radius: 9px;
+}
+
+.dp-stream:hover { border-color: var(--dp-accent); }
+.dp-stream img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.dp-stream-empty { display: grid; place-items: center; width: 100%; height: 100%; color: var(--dp-muted); }
+.dp-stream > .dp-live { position: absolute; top: 8px; left: 8px; }
+.dp-stream.dp-docked { background: #000; border-color: transparent; }
+.dp-stream.dp-docked > * { visibility: hidden; }
+
+.dp-stream-bar {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 10px 8px;
+    background: linear-gradient(transparent, #000c);
+}
+
+.dp-stream-name { flex: 1; overflow: hidden; font-size: 12px; font-weight: 600; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+
+.dp-stream-watch {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #ffffff26;
+    border-radius: 6px;
+}
+
+.dp-stream:hover .dp-stream-watch { background: var(--dp-accent); }
+/* (v1.5) Participants are never hidden behind the stream; in narrow windows they become a list. */
+
+.dp-stream-mini {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 96px;
+    height: 54px;
+    overflow: hidden;
+    color: var(--dp-muted);
+    background: #0d0e13;
+    border: 1px solid #30333c;
+    border-radius: 6px;
+}
+
+.dp-stream-mini:hover { border-color: var(--dp-accent); }
+.dp-stream-mini.dp-docked { background: #000; border-color: transparent; }
+.dp-stream-mini.dp-docked > * { visibility: hidden; }
+.dp-stream-mini img { width: 100%; height: 100%; object-fit: cover; }
+.dp-stream-mini .dp-live { position: absolute; top: 2px; left: 2px; padding: 0 3px; font-size: 8px; }
+
+/* ── 10. Quest chip ───────────────────────────────────────────────────── */
+.dp-quest-chip {
+    position: fixed;
+    right: 18px;
+    bottom: 16px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px;
+    background: #1c1d25;
+    border: 1px solid var(--dp-line-strong);
+    border-radius: 11px;
+    box-shadow: 0 8px 24px #0007;
+}
+
+.dp-quest-open { display: flex !important; align-items: center; gap: 10px; padding: 4px 8px !important; text-align: left; color: var(--dp-accent) !important; border-radius: 8px; }
+.dp-quest-open:hover { background: var(--dp-hover) !important; }
+.dp-quest-open span { display: flex; flex-direction: column; }
+.dp-quest-open strong { font-size: 13px; color: var(--dp-text); }
+.dp-quest-open small { font-size: 11px; color: var(--dp-muted); }
+
+/* ── 11. Motion ───────────────────────────────────────────────────────── */
+@keyframes dp-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+}
+
+.dp-home-inner,
+.dp-call,
+.dp-dock { animation: dp-fade-in 180ms ease-out; }
+
+body.dp-reduce-motion #vc-discordplus-root *,
+body.dp-reduce-motion #vc-discordplus-root *::before { animation: none !important; transition: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+    #vc-discordplus-root *,
+    #vc-discordplus-root *::before { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 900px) {
+    .dp-home-inner { padding: 18px 16px 110px; }
+    .dp-nav-item span { display: none; }
+}

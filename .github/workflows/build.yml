@@ -1,0 +1,61 @@
+name: Build check
+
+# Builds Discord+ inside the latest Vencord and type-checks it, so a Discord/Vencord change that breaks
+# the plugin shows up here instead of in someone's client. Also reused by the release workflow.
+on:
+  push:
+    branches: [main, claude/improvements]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch Vencord
+        run: git clone --depth 1 https://github.com/Vendicated/Vencord.git vencord-src
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: vencord-src/package.json
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: vencord-src/pnpm-lock.yaml
+
+      - name: Add Discord+ to Vencord
+        run: |
+          # A native.ts would be loaded into Discord's main process; Discord+ must not have one.
+          test ! -e vencord/userplugins/discordPlus/native.ts
+          mkdir -p vencord-src/src/userplugins
+          cp -r vencord/userplugins/discordPlus vencord-src/src/userplugins/discordPlus
+
+      - name: Install Vencord dependencies
+        working-directory: vencord-src
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Vencord with Discord+
+        working-directory: vencord-src
+        run: pnpm build
+
+      - name: Type-check
+        working-directory: vencord-src
+        run: pnpm testTsc
+
+      - name: Check preview and installer scripts
+        run: |
+          node --check preview/app.js
+          pwsh -NoProfile -Command '
+            foreach ($f in "installer/install.ps1", "installer/uninstall.ps1") {
+              $errors = $null
+              [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$null, [ref]$errors) | Out-Null
+              if ($errors) { $errors | ForEach-Object { Write-Error "$f : $($_.Message)" }; exit 1 }
+            }'
