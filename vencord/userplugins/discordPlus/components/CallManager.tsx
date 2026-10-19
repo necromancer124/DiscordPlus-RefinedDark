@@ -7,11 +7,11 @@
  * Expanded and minimized are two states of ONE window, never shown together.
  */
 import {
-    ApplicationStreamingStore, ChannelStore, GuildStore, MediaEngineStore,
-    SelectedChannelStore, useEffect, UserStore, useRef, useState, VoiceStateStore
+    ApplicationStreamingStore, ChannelStore, GuildStore, MediaEngineStore, PresenceStore,
+    SelectedChannelStore, SelfPresenceStore, useEffect, UserStore, useRef, useState, VoiceStateStore
 } from "@webpack/common";
 
-import { avatarOf, callStartedAt, displayName, formatDuration, useClock, useStoreTick } from "../data";
+import { avatarOf, callStartedAt, displayName, formatDuration, selfStatus, Status, statusOf, useClock, useStoreTick } from "../data";
 import {
     disconnectVoice, isSpeaking, openCallPage, openProfile, safe, SpeakingStore, stopWatching, toggleDeafen, toggleMute,
     toggleScreenShare, watchStream
@@ -30,6 +30,7 @@ interface Participant {
     streaming: boolean;
     speaking: boolean;
     self: boolean;
+    status: Status;
 }
 
 interface VoiceStateLike {
@@ -103,7 +104,7 @@ function Tile({ p, row, onWatch }: { p: Participant; row?: boolean; onWatch?(): 
             onClick={() => openProfile(p.id)}
             onKeyDown={e => { if (e.key === "Enter") openProfile(p.id); }}
         >
-            <Avatar src={p.avatar} name={p.name} size={row ? 32 : 48} speaking={p.speaking} />
+            <Avatar src={p.avatar} name={p.name} size={row ? 32 : 48} speaking={p.speaking} status={p.status} />
             <span className="dp-tile-name">{p.name}{p.self ? " (you)" : ""}</span>
             {p.streaming && <span className="dp-live dp-live-tile">LIVE</span>}
             {p.streaming && onWatch && (
@@ -130,7 +131,7 @@ function Tile({ p, row, onWatch }: { p: Participant; row?: boolean; onWatch?(): 
  * call's own server unless the user showed it there from the header (`forceShow`).
  */
 export function CallManager({ route, forceShow = false }: { route: string; forceShow?: boolean; }) {
-    useStoreTick([SelectedChannelStore, VoiceStateStore, SpeakingStore, MediaEngineStore, ChannelStore, UserStore, GuildStore, ApplicationStreamingStore]);
+    useStoreTick([SelectedChannelStore, VoiceStateStore, SpeakingStore, MediaEngineStore, ChannelStore, UserStore, GuildStore, ApplicationStreamingStore, PresenceStore, SelfPresenceStore]);
     const now = useClock(1000);
     const { callMinimized: savedMinimized, dockStreamVideo, callMembersHidden, callHidden } =
         settings.use(["callMinimized", "dockStreamVideo", "callMembersHidden", "callHidden"]);
@@ -225,6 +226,7 @@ export function CallManager({ route, forceShow = false }: { route: string; force
         deafened: vs.selfDeaf || vs.deaf,
         streaming: !!vs.selfStream,
         speaking: isSpeaking(vs.userId),
+        status: vs.userId === me ? selfStatus(safe(() => SelfPresenceStore.getStatus(), "online" as string)) : statusOf(vs.userId),
         self: vs.userId === me
     })).sort((a, b) => Number(a.self) - Number(b.self));
 

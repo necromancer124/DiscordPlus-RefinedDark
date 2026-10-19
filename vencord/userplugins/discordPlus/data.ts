@@ -11,11 +11,14 @@ import {
 import { safe, snowflakeTime } from "./discordApi";
 import { isFavorite } from "./settings";
 
-export type Status = "online" | "idle" | "dnd" | "offline";
+/** Presence as shown by Discord+: Discord's four statuses plus "streaming" and "online on mobile". */
+export type Status = "online" | "streaming" | "mobile" | "idle" | "dnd" | "offline";
 export type RelationKind = "friend" | "incoming" | "outgoing" | "blocked";
 
-export const STATUS_LABEL: Record<Status, string> = { online: "Online", idle: "Idle", dnd: "Do Not Disturb", offline: "Offline" };
-export const STATUS_ORDER: Status[] = ["online", "idle", "dnd", "offline"];
+export const STATUS_LABEL: Record<Status, string> = {
+    online: "Online", streaming: "Streaming", mobile: "Online on mobile", idle: "Idle", dnd: "Do Not Disturb", offline: "Offline"
+};
+export const STATUS_ORDER: Status[] = ["online", "streaming", "mobile", "idle", "dnd", "offline"];
 
 const ACTIVITY_VERB: Partial<Record<ActivityType, string>> = {
     [ActivityType.PLAYING]: "Playing",
@@ -152,8 +155,18 @@ export const FRIEND_STORES = [RelationshipStore, PresenceStore, UserStore, ReadS
 
 export function statusOf(userId: string): Status {
     const s = safe(() => PresenceStore.getStatus(userId), "offline" as string);
-    if (s === "streaming") return "online";
-    return STATUS_ORDER.includes(s as Status) ? s as Status : "offline";
+    if (s === "streaming") return "streaming";
+    if (!(["online", "idle", "dnd"] as string[]).includes(s)) return "offline";
+    // A streaming activity (e.g. Twitch) shows as streaming, like Discord does.
+    if (safe(() => PresenceStore.getActivities(userId).some(a => a.type === ActivityType.STREAMING), false)) return "streaming";
+    if (s === "online" && safe(() => PresenceStore.isMobileOnline(userId), false)) return "mobile";
+    return s as Status;
+}
+
+/** Your own status (the self-presence store has no mobile / streaming detail). */
+export function selfStatus(raw: string): Status {
+    if (raw === "invisible") return "offline";
+    return (["online", "idle", "dnd", "offline"] as string[]).includes(raw) ? raw as Status : "online";
 }
 
 export function avatarOf(userId: string, size = 64): string | null {

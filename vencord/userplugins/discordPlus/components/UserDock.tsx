@@ -4,7 +4,7 @@
  */
 import { MediaEngineStore, SelfPresenceStore, useEffect, UserStore, useRef } from "@webpack/common";
 
-import { avatarOf, Status, STATUS_ORDER, useStoreTick } from "../data";
+import { avatarOf, selfStatus, useStoreTick } from "../data";
 import { openProfile, openUserSettings, safe, toggleDeafen, toggleMute } from "../discordApi";
 import { settings } from "../settings";
 import { Avatar, useFloating } from "./common";
@@ -27,7 +27,7 @@ export function UserDock({ onMounted }: { onMounted(active: boolean): void; }) {
     const muted = safe(() => MediaEngineStore.isSelfMute(), false);
     const deafened = safe(() => MediaEngineStore.isSelfDeaf(), false);
     const raw = safe(() => SelfPresenceStore.getStatus(), "online" as string);
-    const status: Status = raw === "invisible" ? "offline" : STATUS_ORDER.includes(raw as Status) ? raw as Status : "online";
+    const status = selfStatus(raw);
     if (!me) return null;
     const name = me.globalName || me.username;
 

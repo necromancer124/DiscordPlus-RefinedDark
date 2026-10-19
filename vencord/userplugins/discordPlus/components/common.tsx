@@ -4,8 +4,9 @@
  */
 import { useEffect, useRef } from "@webpack/common";
 
-import type { Status } from "../data";
+import { STATUS_LABEL, type Status } from "../data";
 import { Placement, settings } from "../settings";
+import { StatusIcon } from "./Icons";
 
 export function Avatar({ src, name, status, size = 40, speaking }: {
     src: string | null;
@@ -22,7 +23,11 @@ export function Avatar({ src, name, status, size = 40, speaking }: {
             {src
                 ? <img src={src} alt="" loading="lazy" draggable={false} />
                 : <span className="dp-avatar-fallback">{(name || "?").slice(0, 1).toUpperCase()}</span>}
-            {status && <i className={`dp-presence dp-${status}`} aria-label={status} />}
+            {status && (
+                <span className={`dp-status dp-status-${status}`} role="img" aria-label={STATUS_LABEL[status]} title={STATUS_LABEL[status]}>
+                    <StatusIcon status={status} size={Math.max(9, Math.round(size * 0.3))} />
+                </span>
+            )}
         </span>
     );
 }

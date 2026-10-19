@@ -10,7 +10,7 @@ import {
 } from "@webpack/common";
 
 import {
-    avatarOf, callStartedAt, displayName, formatDuration, Status, STATUS_ORDER, totalDmUnread, useClock, useStoreTick
+    avatarOf, callStartedAt, displayName, formatDuration, selfStatus, totalDmUnread, useClock, useStoreTick
 } from "../data";
 import { go, openCallPage, openProfile, openUserSettings, ROUTES, safe, toggleDeafen, toggleMute } from "../discordApi";
 import { isInsideCall } from "./CallManager";
@@ -113,7 +113,7 @@ function HeaderUser() {
     const muted = safe(() => MediaEngineStore.isSelfMute(), false);
     const deafened = safe(() => MediaEngineStore.isSelfDeaf(), false);
     const raw = safe(() => SelfPresenceStore.getStatus(), "online" as string);
-    const status: Status = raw === "invisible" ? "offline" : STATUS_ORDER.includes(raw as Status) ? raw as Status : "online";
+    const status = selfStatus(raw);
     const name = me.globalName || me.username;
 
     return (

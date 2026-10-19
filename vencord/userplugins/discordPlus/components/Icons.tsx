@@ -2,6 +2,7 @@
  * Discord+ Refined Dark — one icon family: 24px grid, 1.8 stroke, round caps.
  * SPDX-License-Identifier: CC-BY-NC-4.0
  */
+import { useRef } from "@webpack/common";
 
 const PATHS = {
     friends: "M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 17.5V19M10 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm10 8v-1.5a3.5 3.5 0 0 0-2.5-3.35M15.5 4.15a3.5 3.5 0 0 1 0 6.7",
@@ -36,6 +37,52 @@ const PATHS = {
 } as const;
 
 export type IconName = keyof typeof PATHS;
+
+let maskSeq = 0;
+
+/**
+ * Status icons (design/status-icons): each status has its own shape, not only its own colour.
+ * Cut-outs are real transparency, so the ring colour behind the badge shows through.
+ */
+export function StatusIcon({ status, size = 12 }: { status: "online" | "streaming" | "mobile" | "idle" | "dnd" | "offline"; size?: number; }) {
+    // Unique mask id per instance (several icons share one document).
+    const id = useRef<string | null>(null);
+    if (!id.current) id.current = `dp-status-${++maskSeq}`;
+    const m = id.current;
+    const cut = (shape: any) => (
+        <defs>
+            <mask id={m}>
+                <rect width="16" height="16" fill="#fff" />
+                {shape}
+            </mask>
+        </defs>
+    );
+    let body: any;
+    switch (status) {
+        case "idle":
+            body = <>{cut(<circle cx="11.6" cy="4.4" r="5.2" fill="#000" />)}<circle cx="8" cy="8" r="7" fill="#f0b74a" mask={`url(#${m})`} /></>;
+            break;
+        case "dnd":
+            body = <>{cut(<rect x="3.75" y="6.6" width="8.5" height="2.8" rx="1.4" fill="#000" />)}<circle cx="8" cy="8" r="7" fill="#f04755" mask={`url(#${m})`} /></>;
+            break;
+        case "offline":
+            body = <circle cx="8" cy="8" r="5.4" fill="none" stroke="#80848e" strokeWidth={3.2} />;
+            break;
+        case "streaming":
+            body = <>{cut(<path d="M6.3 4.9v6.2a.6.6 0 0 0 .9.5l4.9-3.1a.6.6 0 0 0 0-1L7.2 4.4a.6.6 0 0 0-.9.5Z" fill="#000" />)}<circle cx="8" cy="8" r="7" fill="#7478f8" mask={`url(#${m})`} /></>;
+            break;
+        case "mobile":
+            body = <>{cut(<><rect x="5.6" y="3.4" width="4.8" height="7.6" rx=".8" fill="#000" /><circle cx="8" cy="12.7" r=".95" fill="#000" /></>)}<rect x="3.6" y="1" width="8.8" height="14" rx="2.6" fill="#43b581" mask={`url(#${m})`} /></>;
+            break;
+        default:
+            body = <circle cx="8" cy="8" r="7" fill="#43b581" />;
+    }
+    return (
+        <svg className="dp-status-icon" viewBox="0 0 16 16" width={size} height={size} aria-hidden="true">
+            {body}
+        </svg>
+    );
+}
 
 export function Icon({ name, size = 18, className }: { name: IconName; size?: number; className?: string; }) {
     return (

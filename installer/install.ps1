@@ -166,7 +166,7 @@ New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
     clonedByInstaller = $clonedByUs
     injected          = $injected
     pluginPath        = $pluginTarget
-    pluginVersion     = "1.6.0"
+    pluginVersion     = "1.7.0"
     installedAt       = (Get-Date).ToString("s")
 } | ConvertTo-Json | Set-Content -Path $StateFile -Encoding UTF8
 

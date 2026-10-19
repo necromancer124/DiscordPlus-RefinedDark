@@ -16,7 +16,7 @@ const people = [
     ["orbit", "Orbit", "online", [0, "ROBLOX"], "join?", 1, "orbit.svg", 240e3],
     ["kestrel", "Kestrel", "online", [0, "Notepad++"], "sent a file", 0, "kestrel.svg", 9e5],
     ["juniper", "Juniper", "online", null, "yo you free later?", 0, "juniper.svg", 19e5],
-    ["moss", "Moss", "online", null, "", 0, "moss.svg", 36e5],
+    ["moss", "Moss", "online", [1, "Speedrun practice"], "", 0, "moss.svg", 36e5],
     ["echo", "Echo", "idle", null, "brb", 0, "echo.svg", 108e5],
     ["harbor", "Harbor", "dnd", [4, "Sweet Harbor Dreams"], "good night", 0, "harbor.svg", 18e6],
     ["comet", "Comet", "idle", null, "can u send that pic again?", 0, "comet.svg", 216e5],
@@ -64,7 +64,7 @@ export const RelationshipStore = Object.assign(new Store(), {
     getFriendIDs: () => people.map(p => p[0]), getNickname: () => undefined, isFriend: id => !!statuses[id],
     getMutableRelationships: () => new Map([["req1", 3], ["req2", 4]]), getBlockedIDs: () => []
 });
-export const PresenceStore = Object.assign(new Store(), { getStatus: id => statuses[id] ?? "offline", getActivities: id => acts[id] ?? [] });
+export const PresenceStore = Object.assign(new Store(), { getStatus: id => statuses[id] ?? "offline", getActivities: id => acts[id] ?? [], isMobileOnline: id => id === "juniper" });
 export const ChannelStore = Object.assign(new Store(), { getDMFromUserId: id => dms[id], getChannel: id => channels[id] });
 export const ReadStateStore = Object.assign(new Store(), { getMentionCount: id => unread[id] ?? 0 });
 export const MessageStore = Object.assign(new Store(), { getMessages: id => msgs[id] });

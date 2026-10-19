@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.7.0 — 2026-10-20
+- **New status icons** (`design/status-icons/`), used on every avatar: friend cards, Messages, the header, the
+  floating dock and call-manager tiles. Each status has its own shape as well as colour: online dot, idle crescent,
+  do-not-disturb bar, offline ring, and two new ones: **streaming** (purple play) and **online on mobile** (phone).
+  Cut-outs are real transparency over a ring in the surface colour.
+- Statuses now detect streaming (Discord's streaming status or a streaming activity) and online-on-mobile.
+- Call-manager tiles show each participant's status.
+
 ## v1.6.0 — 2026-10-19 (first public release)
 - **License:** Creative Commons BY-NC 4.0: free for non-commercial use with credit to necromancer124 and a link to
   the original repository; commercial use needs the author's approval.
