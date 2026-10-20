@@ -9,8 +9,10 @@
     4. Builds Vencord.
     5. Closes Discord (asks first) and, the first time, injects Vencord with the official Vencord installer.
     6. Turns DiscordPlus on in Vencord's settings (backup kept as settings.json.discordplus-backup).
-    7. Writes %LOCALAPPDATA%\DiscordPlus\install-state.json so UNINSTALL.bat knows what to revert.
-    8. Starts Discord again (the same Stable / PTB / Canary that was running) with Discord+ enabled.
+    7. Installs the Discord+ launcher: "Discord+" shortcuts (desktop + Start menu) and a check at Windows
+       login. They re-patch Discord when an update arrives unpatched, so Discord+ survives updates.
+    8. Writes %LOCALAPPDATA%\DiscordPlus\install-state.json so UNINSTALL.bat knows what to revert.
+    9. Starts Discord again (the same Stable / PTB / Canary that was running) with Discord+ enabled.
 
     Re-running it updates Discord+ (copy + rebuild). Inject only runs the first time, or with -Reinject
     (needed after a Discord update removes Vencord).
@@ -30,6 +32,9 @@
 
 .PARAMETER NoStart
     Don't start Discord at the end.
+
+.PARAMETER NoLauncher
+    Don't install the "Discord+" shortcuts and login check that keep Discord+ working after Discord updates.
 #>
 [CmdletBinding()]
 param(
@@ -37,7 +42,8 @@ param(
     [switch]$UpdateVencord,
     [switch]$Reinject,
     [switch]$SkipInject,
-    [switch]$NoStart
+    [switch]$NoStart,
+    [switch]$NoLauncher
 )
 
 $ErrorActionPreference = "Stop"
@@ -203,14 +209,69 @@ if ($injected -and -not $SkipInject) {
     }
 }
 
-# -- 7. Remember what we did ----------------------------------------------------
+# -- 7. Discord+ launcher (survive Discord updates) ---------------------------------
+# Each Discord update installs a new app-* folder without Vencord's patch. Vencord re-patches updates that
+# happen while it runs; the launcher also covers updates applied while Discord starts.
+$RunKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+$launcherShortcuts = @()
+$launcherRunValues = @()
+$patchedFlavors = @($Flavors | Where-Object {
+    Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA $_) -Directory -Filter "app-*" -ErrorAction SilentlyContinue |
+        Where-Object { Test-Path (Join-Path $_.FullName "resources\_app.asar") }
+})
+if ($injected -and -not $SkipInject -and -not $NoLauncher -and $patchedFlavors) {
+    Write-Step "Installing the Discord+ launcher (keeps Discord+ after Discord updates)"
+    New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
+    Copy-Item -Path (Join-Path $PSScriptRoot "launcher.ps1"), (Join-Path $PSScriptRoot "DiscordPlus.vbs") -Destination $StateDir -Force
+    $vbs = Join-Path $StateDir "DiscordPlus.vbs"
+    $shell = New-Object -ComObject WScript.Shell
+    $desktop = [Environment]::GetFolderPath("Desktop")
+    $startMenu = Join-Path ([Environment]::GetFolderPath("Programs")) "Discord+"
+    New-Item -ItemType Directory -Force -Path $startMenu | Out-Null
+
+    foreach ($flavor in $patchedFlavors) {
+        # Keep a copy of Vencord's loader, so a repair works even after Discord deletes old versions.
+        $patched = Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA $flavor) -Directory -Filter "app-*" |
+            Where-Object { Test-Path (Join-Path $_.FullName "resources\_app.asar") } |
+            Sort-Object { try { [version]$_.Name.Substring(4) } catch { [version]"0.0" } } | Select-Object -Last 1
+        Copy-Item -Path (Join-Path $patched.FullName "resources\app.asar") -Destination (Join-Path $StateDir "vencord-loader.asar") -Recurse -Force
+
+        $label = if ($flavor -eq "Discord") { "Discord+" } else { "Discord+ " + $flavor.Substring(7) }
+        $icon = Join-Path $env:LOCALAPPDATA "$flavor\app.ico"
+        if (-not (Test-Path $icon)) { $icon = Join-Path $env:LOCALAPPDATA "$flavor\Update.exe" }
+        foreach ($dir in @($desktop, $startMenu)) {
+            $lnkPath = Join-Path $dir "$label.lnk"
+            $lnk = $shell.CreateShortcut($lnkPath)
+            $lnk.TargetPath = Join-Path $env:WINDIR "System32\wscript.exe"
+            $lnk.Arguments = "`"$vbs`" -Flavor $flavor -Mode launch"
+            $lnk.IconLocation = "$icon,0"
+            $lnk.Description = "Open $flavor with Discord+ (re-patches after Discord updates)"
+            $lnk.WorkingDirectory = $StateDir
+            $lnk.Save()
+            $launcherShortcuts += $lnkPath
+        }
+
+        # At Windows login: check while Discord's own "open on startup" launches it.
+        $valueName = "DiscordPlus-$flavor"
+        $command = "`"$(Join-Path $env:WINDIR 'System32\wscript.exe')`" `"$vbs`" -Flavor $flavor -Mode check"
+        New-Item -Path $RunKey -Force | Out-Null
+        Set-ItemProperty -Path $RunKey -Name $valueName -Value $command
+        $launcherRunValues += $valueName
+        Write-Ok "$label shortcuts (desktop + Start menu) and login check ready"
+    }
+    Write-Note "Open Discord with the Discord+ shortcut (or pin it to the taskbar) so updates get re-patched."
+}
+
+# -- 8. Remember what we did ----------------------------------------------------
 New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
 [ordered]@{
     vencordDir        = $VencordDir
     clonedByInstaller = $clonedByUs
     injected          = $injected
     pluginPath        = $pluginTarget
-    pluginVersion     = "1.7.1"
+    pluginVersion     = "1.8.0"
+    launcherShortcuts = $launcherShortcuts
+    launcherRunValues = $launcherRunValues
     installedAt       = (Get-Date).ToString("s")
 } | ConvertTo-Json | Set-Content -Path $StateFile -Encoding UTF8
 
@@ -219,16 +280,21 @@ Write-Host "Discord+ is installed." -ForegroundColor Green
 Write-Host "  - Every feature can be switched off in Settings > Vencord > Plugins > DiscordPlus."
 Write-Host "  - To undo: disable the plugin in Discord, or run UNINSTALL.bat."
 
-# -- 8. Start Discord with Discord+ ------------------------------------------------
+# -- 9. Start Discord with Discord+ ------------------------------------------------
 if ($injected -and -not $SkipInject -and -not $NoStart) {
     # Reopen what was running; if nothing was, the first installed of Stable, PTB, Canary.
     $toStart = @($script:ClosedFlavors)
     if (-not $toStart) {
         $toStart = @($Flavors | Where-Object { Test-Path (Join-Path $env:LOCALAPPDATA "$_\Update.exe") } | Select-Object -First 1)
     }
+    $vbsLauncher = Join-Path $StateDir "DiscordPlus.vbs"
     foreach ($flavor in $toStart) {
         $updater = Join-Path $env:LOCALAPPDATA "$flavor\Update.exe"
-        if (Test-Path $updater) {
+        if ((Test-Path $vbsLauncher) -and ($patchedFlavors -contains $flavor) -and -not $NoLauncher) {
+            # Through the launcher, so an update applied right now is re-patched too.
+            Write-Step "Starting $flavor with Discord+"
+            Start-Process -FilePath (Join-Path $env:WINDIR "System32\wscript.exe") -ArgumentList "`"$vbsLauncher`"", "-Flavor", $flavor, "-Mode", "launch"
+        } elseif (Test-Path $updater) {
             Write-Step "Starting $flavor with Discord+"
             Start-Process $updater -ArgumentList "--processStart", "$flavor.exe"
         } else {

@@ -62,12 +62,28 @@ extract it, and continue at step 2. Or clone this repository.
    - copy the Discord+ plugin in and build it,
    - ask before closing Discord, then (the first time) run the **official Vencord installer**. Pick your Discord (usually *Stable*) → *Install*,
    - turn **DiscordPlus** on in Vencord's settings (a backup of that file is kept as `settings.json.discordplus-backup`),
+   - add **Discord+** shortcuts (desktop + Start menu) and a check at Windows login that keep Discord+ working after Discord updates,
    - **start Discord again with Discord+ enabled** (the same Stable / PTB / Canary that was running).
 3. That's it. Discord+ is in **Settings → Vencord → Plugins → DiscordPlus** if you want to change anything.
 
 To **update** after changing the plugin, run `INSTALL.bat` again; it re-copies and rebuilds.
 If a Discord update removes Vencord, run `INSTALL.bat -Reinject`.
-Options: `-UpdateVencord` (pull the latest Vencord first), `-SkipInject` (build only), `-NoStart` (don't start Discord at the end), `-VencordDir <path>` (use your own checkout).
+Options: `-UpdateVencord` (pull the latest Vencord first), `-SkipInject` (build only), `-NoStart` (don't start Discord at the end), `-NoLauncher` (no shortcuts / login check), `-VencordDir <path>` (use your own checkout).
+
+### Discord updates
+
+Every Discord update installs a new version folder (`app-1.0.XXXX`) that doesn't contain Vencord, so Discord can
+open looking normal again. Vencord itself re-patches updates that happen while it's running. Updates that are
+applied while Discord *starts* (often the first start of the day) are covered by the **Discord+ launcher**:
+
+- Open Discord with the **Discord+** shortcut (pin it to the taskbar instead of the normal Discord icon). Before
+  starting Discord it checks the newest version and patches it if needed, then watches the first few minutes for
+  an update and, if one lands unpatched, patches it and restarts Discord once.
+- At Windows login a quiet check does the same while Discord's own "open on startup" launches it.
+- It patches exactly like Vencord does (Discord's `app.asar` is kept as `_app.asar`) and keeps a copy of
+  Vencord's loader, so it still works after Discord deletes old versions. Log: `%LOCALAPPDATA%\DiscordPlus\launcher.log`.
+
+If Discord+ is ever missing anyway, run `INSTALL.bat -Reinject`.
 
 ## Undo / revert
 

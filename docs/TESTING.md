@@ -1,5 +1,12 @@
 # Testing and verification
 
+## v1.8.0 — launcher (2026-10-20)
+`launcher.ps1 -DiscordRoot <fake folder>` (test mode: no processes touched), PowerShell 7 and 5.1:
+vanilla newest version patched before start (`app.asar`→`_app.asar`, loader copied in); an update created mid-watch
+patched + "restart"; all old versions deleted → patched from the saved loader; no loader anywhere → nothing changed,
+logged. `DiscordPlus.vbs` runs it hidden with arguments passed through. Shortcut creation verified in a scratch
+folder (wscript target, arguments, Discord icon). Not run against the real Discord install.
+
 ## v1.7.1 — installer enable step (2026-10-20)
 `installer/enable-plugin.cjs` on sample files: disabled → enabled (other plugins and DiscordPlus settings kept,
 4-space JSON, backup written); already enabled → untouched, no backup; BOM file → enabled, BOM removed; no

@@ -54,6 +54,23 @@ if (-not $state) {
     $state = [pscustomobject]@{ vencordDir = $dir; clonedByInstaller = $false; injected = $true }
 }
 $VencordDir = $state.vencordDir
+
+# The Discord+ launcher: "Discord+" shortcuts, login checks and its files in %LOCALAPPDATA%\DiscordPlus.
+function Remove-Launcher {
+    $runKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+    foreach ($name in @("DiscordPlus-Discord", "DiscordPlus-DiscordPTB", "DiscordPlus-DiscordCanary") + @($state.launcherRunValues)) {
+        if ($name) { Remove-ItemProperty -Path $runKey -Name $name -ErrorAction SilentlyContinue }
+    }
+    $desktop = [Environment]::GetFolderPath("Desktop")
+    $startMenu = Join-Path ([Environment]::GetFolderPath("Programs")) "Discord+"
+    $links = @($state.launcherShortcuts) + @("Discord+", "Discord+ PTB", "Discord+ Canary" | ForEach-Object { Join-Path $desktop "$_.lnk" })
+    foreach ($lnk in $links) { if ($lnk -and (Test-Path $lnk)) { Remove-Item -Force $lnk } }
+    if (Test-Path $startMenu) { Remove-Item -Recurse -Force $startMenu }
+    foreach ($f in @("launcher.ps1", "DiscordPlus.vbs", "vencord-loader.asar", "launcher.log")) {
+        Remove-Item -Force (Join-Path $StateDir $f) -ErrorAction SilentlyContinue
+    }
+    Write-Ok "Removed the Discord+ shortcuts, login check and launcher"
+}
 if (-not (Test-Path (Join-Path $VencordDir "package.json"))) { Fail "$VencordDir doesn't look like a Vencord checkout." }
 
 if (-not $Mode) {
@@ -80,6 +97,7 @@ if ($Mode -eq "PluginOnly") {
     Push-Location $VencordDir
     try { Invoke-Native "pnpm build" { pnpm build } } finally { Pop-Location }
     Stop-Discord
+    Remove-Launcher
     Remove-Item -Force $StateFile -ErrorAction SilentlyContinue
     Write-Host ""
     Write-Host "Discord+ removed. Start Discord again; Vencord stays installed." -ForegroundColor Green
@@ -105,6 +123,7 @@ if ($state.clonedByInstaller) {
     if (Test-Path $pluginTarget) { Remove-Item -Recurse -Force $pluginTarget; Write-Ok "Removed the Discord+ plugin from it" }
 }
 
+Remove-Launcher
 Remove-Item -Force $StateFile -ErrorAction SilentlyContinue
 if ((Test-Path $StateDir) -and -not (Get-ChildItem $StateDir -Force | Select-Object -First 1)) { Remove-Item -Force $StateDir }
 

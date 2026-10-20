@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.8.0 — 2026-10-20
+- **Survives Discord updates.** New Discord+ launcher (`installer/launcher.ps1`, run hidden via `DiscordPlus.vbs`):
+  "Discord+" shortcuts on the desktop and in the Start menu, and a check at Windows login. Before Discord starts it
+  patches the newest `app-*` version if an update left it unpatched; for 3 minutes after start it watches for an
+  update landing during startup, patches it and restarts Discord once. Patches the same way Vencord's own
+  `persistAfterDiscordUpdates` does and keeps a copy of Vencord's loader. Log in `%LOCALAPPDATA%\DiscordPlus`.
+- Installer starts Discord through the launcher; new `-NoLauncher` option. `UNINSTALL.bat` removes the shortcuts,
+  login check and launcher files in both modes.
+
 ## v1.7.1 — 2026-10-20
 - **Installer opens Discord with Discord+ enabled.** After building it closes Discord (asks first, also on
   re-runs), turns DiscordPlus on in Vencord's `settings.json` (via `installer/enable-plugin.cjs`: keeps every other
