@@ -1,3 +1,4 @@
 # Windows scripts keep CRLF line endings in every checkout (including release zips built on Linux).
 *.bat text eol=crlf
 *.ps1 text eol=crlf
+*.vbs text eol=crlf
