@@ -60,12 +60,14 @@ extract it, and continue at step 2. Or clone this repository.
 2. Double-click **`INSTALL.bat`**. It will:
    - download Vencord's source to `%LOCALAPPDATA%\DiscordPlus\Vencord` (or reuse it),
    - copy the Discord+ plugin in and build it,
-   - ask before closing Discord, then run the **official Vencord installer**. Pick your Discord (usually *Stable*) → *Install*.
-3. Start Discord. Discord+ is on by default (**Settings → Vencord → Plugins → DiscordPlus**).
+   - ask before closing Discord, then (the first time) run the **official Vencord installer**. Pick your Discord (usually *Stable*) → *Install*,
+   - turn **DiscordPlus** on in Vencord's settings (a backup of that file is kept as `settings.json.discordplus-backup`),
+   - **start Discord again with Discord+ enabled** (the same Stable / PTB / Canary that was running).
+3. That's it. Discord+ is in **Settings → Vencord → Plugins → DiscordPlus** if you want to change anything.
 
 To **update** after changing the plugin, run `INSTALL.bat` again; it re-copies and rebuilds.
 If a Discord update removes Vencord, run `INSTALL.bat -Reinject`.
-Options: `-UpdateVencord` (pull the latest Vencord first), `-SkipInject` (build only), `-VencordDir <path>` (use your own checkout).
+Options: `-UpdateVencord` (pull the latest Vencord first), `-SkipInject` (build only), `-NoStart` (don't start Discord at the end), `-VencordDir <path>` (use your own checkout).
 
 ## Undo / revert
 

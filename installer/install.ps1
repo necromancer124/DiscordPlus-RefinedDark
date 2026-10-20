@@ -7,8 +7,10 @@
     2. Clones Vencord (or reuses an existing checkout).
     3. Copies the Discord+ plugin into Vencord's src\userplugins.
     4. Builds Vencord.
-    5. Closes Discord (asks first) and injects Vencord with the official Vencord installer.
-    6. Writes %LOCALAPPDATA%\DiscordPlus\install-state.json so UNINSTALL.bat knows what to revert.
+    5. Closes Discord (asks first) and, the first time, injects Vencord with the official Vencord installer.
+    6. Turns DiscordPlus on in Vencord's settings (backup kept as settings.json.discordplus-backup).
+    7. Writes %LOCALAPPDATA%\DiscordPlus\install-state.json so UNINSTALL.bat knows what to revert.
+    8. Starts Discord again (the same Stable / PTB / Canary that was running) with Discord+ enabled.
 
     Re-running it updates Discord+ (copy + rebuild). Inject only runs the first time, or with -Reinject
     (needed after a Discord update removes Vencord).
@@ -25,13 +27,17 @@
 
 .PARAMETER SkipInject
     Only build; don't touch the Discord installation.
+
+.PARAMETER NoStart
+    Don't start Discord at the end.
 #>
 [CmdletBinding()]
 param(
     [string]$VencordDir = (Join-Path $env:LOCALAPPDATA "DiscordPlus\Vencord"),
     [switch]$UpdateVencord,
     [switch]$Reinject,
-    [switch]$SkipInject
+    [switch]$SkipInject,
+    [switch]$NoStart
 )
 
 $ErrorActionPreference = "Stop"
@@ -131,53 +137,103 @@ try {
     Pop-Location
 }
 
-# -- 5. Inject ------------------------------------------------------------------
-function Close-Discord([string]$why) {
-    $running = Get-Process -Name "Discord*" -ErrorAction SilentlyContinue
+# -- 5. Close Discord, inject ---------------------------------------------------
+# Discord flavours: process name = install folder name under %LOCALAPPDATA% = exe started by Update.exe.
+$Flavors = @("Discord", "DiscordPTB", "DiscordCanary")
+$script:ClosedFlavors = @()
+
+function Get-DiscordProcesses { Get-Process -ErrorAction SilentlyContinue | Where-Object { $Flavors -contains $_.ProcessName } }
+
+function Stop-DiscordNow {
+    $running = Get-DiscordProcesses
     if (-not $running) { return }
+    $script:ClosedFlavors = @($script:ClosedFlavors + ($running | ForEach-Object { $_.ProcessName }) | Select-Object -Unique)
+    $running | Stop-Process -Force
+    # Wait until it has really exited: Vencord saves its settings on exit and would overwrite ours.
+    for ($i = 0; $i -lt 20 -and (Get-DiscordProcesses); $i++) { Start-Sleep -Milliseconds 500 }
+}
+
+function Close-Discord([string]$why) {
+    if (-not (Get-DiscordProcesses)) { return }
     $answer = Read-Host "    $why Close it now? [Y/n]"
     if ($answer -match "^(n|no)$") { Fail "Discord is still running. Close it and run INSTALL.bat again." }
-    $running | Stop-Process -Force
-    Start-Sleep -Seconds 2
+    Stop-DiscordNow
 }
+
 $alreadyInjected = $state -and [bool]$state.injected -and $state.vencordDir -eq $VencordDir
 $injected = [bool]$alreadyInjected
 if ($SkipInject) {
     Write-Step "Skipping inject (-SkipInject)"
-} elseif ($alreadyInjected -and -not $Reinject) {
-    Write-Step "Vencord is already injected from this folder; the rebuild is enough."
-    Write-Note "If Discord updated and Discord+ disappeared, run:  INSTALL.bat -Reinject"
-    # A running Discord keeps the old build in memory; it must restart to load the new one.
-    Close-Discord "Discord has to restart to load the new build."
 } else {
-    Write-Step "Injecting Vencord into Discord"
-    Close-Discord "Discord must be closed to install."
-    Write-Note "The official Vencord installer opens next. Pick your Discord install (usually Stable) and choose Install."
-    Push-Location $VencordDir
-    try { Invoke-Native "Vencord inject" { pnpm inject } } finally { Pop-Location }
-    $injected = $true
-    Write-Ok "Injected"
+    # A running Discord keeps the old build in memory, and its settings must not change under it.
+    Close-Discord "Discord has to restart to load Discord+."
+    if ($alreadyInjected -and -not $Reinject) {
+        Write-Step "Vencord is already injected from this folder; the rebuild is enough."
+        Write-Note "If Discord updated and Discord+ disappeared, run:  INSTALL.bat -Reinject"
+    } else {
+        Write-Step "Injecting Vencord into Discord"
+        Write-Note "The official Vencord installer opens next. Pick your Discord install (usually Stable) and choose Install."
+        Push-Location $VencordDir
+        try { Invoke-Native "Vencord inject" { pnpm inject } } finally { Pop-Location }
+        $injected = $true
+        Write-Ok "Injected"
+    }
 }
 
-# -- 6. Remember what we did ----------------------------------------------------
+# -- 6. Turn Discord+ on -----------------------------------------------------------
+if ($injected -and -not $SkipInject) {
+    Write-Step "Turning Discord+ on in Vencord's settings"
+    Stop-DiscordNow  # in case the Vencord installer started it
+    # Vencord keeps its settings in %APPDATA%\Vencord; a dev build may use the checkout's own folder.
+    $settingsFiles = @(
+        (Join-Path $env:APPDATA "Vencord\settings\settings.json"),
+        (Join-Path $VencordDir "settings\settings.json")
+    ) | Where-Object { Test-Path $_ } | Select-Object -Unique
+    if (-not $settingsFiles) {
+        Write-Note "No Vencord settings yet (first start); Discord+ turns itself on by default."
+    }
+    foreach ($file in $settingsFiles) {
+        $result = (& node (Join-Path $PSScriptRoot "enable-plugin.cjs") $file) -join ""
+        switch ($result) {
+            "enabled"         { Write-Ok "Enabled in $file (backup: settings.json.discordplus-backup)" }
+            "already-enabled" { Write-Ok "Already enabled in $file" }
+            "unreadable"      { Write-Note "Couldn't read $file; left it unchanged. Turn DiscordPlus on in Settings > Vencord > Plugins." }
+            default           { Write-Note "Skipped $file ($result)" }
+        }
+    }
+}
+
+# -- 7. Remember what we did ----------------------------------------------------
 New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
 [ordered]@{
     vencordDir        = $VencordDir
     clonedByInstaller = $clonedByUs
     injected          = $injected
     pluginPath        = $pluginTarget
-    pluginVersion     = "1.7.0"
+    pluginVersion     = "1.7.1"
     installedAt       = (Get-Date).ToString("s")
 } | ConvertTo-Json | Set-Content -Path $StateFile -Encoding UTF8
 
 Write-Host ""
 Write-Host "Discord+ is installed." -ForegroundColor Green
-Write-Host "  - Start Discord. Discord+ turns on automatically (Settings > Vencord > Plugins > DiscordPlus)."
-Write-Host "  - Every feature can be switched off in the plugin's settings."
+Write-Host "  - Every feature can be switched off in Settings > Vencord > Plugins > DiscordPlus."
 Write-Host "  - To undo: disable the plugin in Discord, or run UNINSTALL.bat."
 
-$discordUpdater = Join-Path $env:LOCALAPPDATA "Discord\Update.exe"
-if ($injected -and (Test-Path $discordUpdater) -and -not (Get-Process -Name "Discord" -ErrorAction SilentlyContinue)) {
-    $start = Read-Host "Start Discord now? [Y/n]"
-    if ($start -notmatch "^(n|no)$") { Start-Process $discordUpdater -ArgumentList "--processStart", "Discord.exe" }
+# -- 8. Start Discord with Discord+ ------------------------------------------------
+if ($injected -and -not $SkipInject -and -not $NoStart) {
+    # Reopen what was running; if nothing was, the first installed of Stable, PTB, Canary.
+    $toStart = @($script:ClosedFlavors)
+    if (-not $toStart) {
+        $toStart = @($Flavors | Where-Object { Test-Path (Join-Path $env:LOCALAPPDATA "$_\Update.exe") } | Select-Object -First 1)
+    }
+    foreach ($flavor in $toStart) {
+        $updater = Join-Path $env:LOCALAPPDATA "$flavor\Update.exe"
+        if (Test-Path $updater) {
+            Write-Step "Starting $flavor with Discord+"
+            Start-Process $updater -ArgumentList "--processStart", "$flavor.exe"
+        } else {
+            Write-Note "Couldn't find $updater; start $flavor yourself."
+        }
+    }
+    if (-not $toStart) { Write-Note "Couldn't find a Discord install to start; open Discord yourself." }
 }

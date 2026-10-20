@@ -61,7 +61,7 @@ export default definePlugin({
 
     start() {
         startRoot();
-        console.log("[Discord+] v1.7.0 started");
+        console.log("[Discord+] v1.7.1 started");
     },
 
     stop() {

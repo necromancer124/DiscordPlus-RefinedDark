@@ -1,5 +1,11 @@
 # Testing and verification
 
+## v1.7.1 — installer enable step (2026-10-20)
+`installer/enable-plugin.cjs` on sample files: disabled → enabled (other plugins and DiscordPlus settings kept,
+4-space JSON, backup written); already enabled → untouched, no backup; BOM file → enabled, BOM removed; no
+`plugins` key → added; corrupt JSON → left untouched; missing file → skipped. PowerShell 5.1 reads its result.
+`install.ps1` parses in PowerShell 7 and 5.1 (not run end to end here; it would close Discord).
+
 ## v1.6.0 — first real Vencord build (GitHub Actions, 2026-10-19)
 `pnpm build` with Discord+ inside the latest Vencord: **passed**. `pnpm testTsc` found two real errors, both fixed:
 `showToast` now takes `{ text, variant }` instead of a string.

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.7.1 — 2026-10-20
+- **Installer opens Discord with Discord+ enabled.** After building it closes Discord (asks first, also on
+  re-runs), turns DiscordPlus on in Vencord's `settings.json` (via `installer/enable-plugin.cjs`: keeps every other
+  setting, writes the file like Vencord does, leaves an unreadable file untouched, keeps a backup), then starts the
+  same Discord flavour that was running (Stable / PTB / Canary), or Stable. New `-NoStart` option.
+
 ## v1.7.0 — 2026-10-20
 - **New status icons** (`design/status-icons/`), used on every avatar: friend cards, Messages, the header, the
   floating dock and call-manager tiles. Each status has its own shape as well as colour: online dot, idle crescent,
