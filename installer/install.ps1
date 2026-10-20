@@ -9,8 +9,10 @@
     4. Builds Vencord.
     5. Closes Discord (asks first) and, the first time, injects Vencord with the official Vencord installer.
     6. Turns DiscordPlus on in Vencord's settings (backup kept as settings.json.discordplus-backup).
-    7. Installs the Discord+ launcher: "Discord+" shortcuts (desktop + Start menu) and a check at Windows
-       login. They re-patch Discord when an update arrives unpatched, so Discord+ survives updates.
+    7. Finds every Discord install (also the per-user copy in C:\ProgramData\<user>\Discord) and offers to
+       patch the ones Vencord's installer didn't. Then asks, one by one, whether to put Discord+ on the taskbar
+       (replacing the Discord pin), the desktop and the Start menu, and whether to check Discord at Windows login.
+       The Discord+ launcher re-patches Discord when an update arrives unpatched, so Discord+ survives updates.
     8. Writes %LOCALAPPDATA%\DiscordPlus\install-state.json so UNINSTALL.bat knows what to revert.
     9. Starts Discord again (the same Stable / PTB / Canary that was running) with Discord+ enabled.
 
@@ -35,6 +37,9 @@
 
 .PARAMETER NoLauncher
     Don't install the "Discord+" shortcuts and login check that keep Discord+ working after Discord updates.
+
+.PARAMETER Yes
+    Don't ask the optional questions; answer every one with its default (yes).
 #>
 [CmdletBinding()]
 param(
@@ -43,7 +48,8 @@ param(
     [switch]$Reinject,
     [switch]$SkipInject,
     [switch]$NoStart,
-    [switch]$NoLauncher
+    [switch]$NoLauncher,
+    [switch]$Yes
 )
 
 $ErrorActionPreference = "Stop"
@@ -147,6 +153,29 @@ try {
 # Discord flavours: process name = install folder name under %LOCALAPPDATA% = exe started by Update.exe.
 $Flavors = @("Discord", "DiscordPTB", "DiscordCanary")
 $script:ClosedFlavors = @()
+$script:ClosedRoots = @()
+
+function Get-VersionOf($dir) { try { [version]$dir.Name.Substring(4) } catch { [version]"0.0" } }
+
+# Every Discord install: %LOCALAPPDATA%\<flavor>, and the per-user copy Discord's machine-wide installer
+# keeps in %ProgramData%\<user>\<flavor>.
+function Get-DiscordInstalls {
+    foreach ($flavor in $Flavors) {
+        foreach ($root in @((Join-Path $env:LOCALAPPDATA $flavor), (Join-Path $env:ProgramData (Join-Path $env:USERNAME $flavor)))) {
+            if (-not (Test-Path (Join-Path $root "Update.exe"))) { continue }
+            $latest = Get-ChildItem -Path $root -Directory -Filter "app-*" -ErrorAction SilentlyContinue |
+                Where-Object { Test-Path (Join-Path $_.FullName "resources\app.asar") } |
+                Sort-Object { Get-VersionOf $_ } | Select-Object -Last 1
+            [pscustomobject]@{
+                Flavor  = $flavor
+                Root    = $root
+                Latest  = $latest
+                Patched = [bool]($latest -and (Test-Path (Join-Path $latest.FullName "resources\_app.asar")))
+            }
+        }
+    }
+}
+
 
 function Get-DiscordProcesses { Get-Process -ErrorAction SilentlyContinue | Where-Object { $Flavors -contains $_.ProcessName } }
 
@@ -154,6 +183,8 @@ function Stop-DiscordNow {
     $running = Get-DiscordProcesses
     if (-not $running) { return }
     $script:ClosedFlavors = @($script:ClosedFlavors + ($running | ForEach-Object { $_.ProcessName }) | Select-Object -Unique)
+    # Install folder of each running Discord: ...\<root>\app-x.y.z\Discord.exe
+    $script:ClosedRoots = @($script:ClosedRoots + ($running | Where-Object { $_.Path } | ForEach-Object { Split-Path (Split-Path $_.Path) }) | Select-Object -Unique)
     $running | Stop-Process -Force
     # Wait until it has really exited: Vencord saves its settings on exit and would overwrite ours.
     for ($i = 0; $i -lt 20 -and (Get-DiscordProcesses); $i++) { Start-Sleep -Milliseconds 500 }
@@ -173,7 +204,12 @@ if ($SkipInject) {
 } else {
     # A running Discord keeps the old build in memory, and its settings must not change under it.
     Close-Discord "Discord has to restart to load Discord+."
-    if ($alreadyInjected -and -not $Reinject) {
+    # Discord replaces Vencord's patch when it updates; if no install is patched any more, inject again.
+    $anyPatched = [bool](Get-DiscordInstalls | Where-Object { $_.Patched })
+    if ($alreadyInjected -and -not $anyPatched) {
+        Write-Note "No Discord install has Vencord any more (a Discord update or reinstall removed it); injecting again."
+    }
+    if ($alreadyInjected -and $anyPatched -and -not $Reinject) {
         Write-Step "Vencord is already injected from this folder; the rebuild is enough."
         Write-Note "If Discord updated and Discord+ disappeared, run:  INSTALL.bat -Reinject"
     } else {
@@ -209,57 +245,116 @@ if ($injected -and -not $SkipInject) {
     }
 }
 
-# -- 7. Discord+ launcher (survive Discord updates) ---------------------------------
+# -- 7. Discord+ launcher, shortcuts, taskbar (each one asked) ------------------------
 # Each Discord update installs a new app-* folder without Vencord's patch. Vencord re-patches updates that
 # happen while it runs; the launcher also covers updates applied while Discord starts.
+function Ask([string]$question) {
+    if ($Yes) { Write-Note "$question yes"; return $true }
+    $answer = Read-Host "    $question [Y/n]"
+    return -not ($answer -match "^(n|no)$")
+}
+
 $RunKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+$PinDir = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 $launcherShortcuts = @()
 $launcherRunValues = @()
-$patchedFlavors = @($Flavors | Where-Object {
-    Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA $_) -Directory -Filter "app-*" -ErrorAction SilentlyContinue |
-        Where-Object { Test-Path (Join-Path $_.FullName "resources\_app.asar") }
-})
-if ($injected -and -not $SkipInject -and -not $NoLauncher -and $patchedFlavors) {
-    Write-Step "Installing the Discord+ launcher (keeps Discord+ after Discord updates)"
+$launcherPatchedRoots = @()
+$pinPath = $null
+$pinBackup = $null
+$primary = $null
+
+if ($injected -and -not $SkipInject -and -not $NoLauncher) {
+    Write-Step "Discord+ launcher (keeps Discord+ after Discord updates)"
     New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
     Copy-Item -Path (Join-Path $PSScriptRoot "launcher.ps1"), (Join-Path $PSScriptRoot "DiscordPlus.vbs") -Destination $StateDir -Force
     $vbs = Join-Path $StateDir "DiscordPlus.vbs"
-    $shell = New-Object -ComObject WScript.Shell
-    $desktop = [Environment]::GetFolderPath("Desktop")
-    $startMenu = Join-Path ([Environment]::GetFolderPath("Programs")) "Discord+"
-    New-Item -ItemType Directory -Force -Path $startMenu | Out-Null
+    $wscript = Join-Path $env:WINDIR "System32\wscript.exe"
+    Add-Type -TypeDefinition (Get-Content -Raw (Join-Path $PSScriptRoot "ShortcutTools.cs")) -Language CSharp
 
-    foreach ($flavor in $patchedFlavors) {
-        # Keep a copy of Vencord's loader, so a repair works even after Discord deletes old versions.
-        $patched = Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA $flavor) -Directory -Filter "app-*" |
-            Where-Object { Test-Path (Join-Path $_.FullName "resources\_app.asar") } |
-            Sort-Object { try { [version]$_.Name.Substring(4) } catch { [version]"0.0" } } | Select-Object -Last 1
-        Copy-Item -Path (Join-Path $patched.FullName "resources\app.asar") -Destination (Join-Path $StateDir "vencord-loader.asar") -Recurse -Force
+    $installs = @(Get-DiscordInstalls)
+    # Keep a copy of Vencord's loader (from the newest patched version anywhere).
+    $source = $installs | Where-Object { $_.Patched } | Sort-Object { Get-VersionOf $_.Latest } | Select-Object -Last 1
+    $loader = Join-Path $StateDir "vencord-loader.asar"
+    if ($source) { Copy-Item -Path (Join-Path $source.Latest.FullName "resources\app.asar") -Destination $loader -Recurse -Force }
 
+    # Discord installs Vencord's installer didn't patch (Discord is closed at this point).
+    foreach ($inst in $installs | Where-Object { -not $_.Patched -and $_.Latest }) {
+        if (-not (Test-Path $loader)) { break }
+        if (Ask "Discord is also installed in $($inst.Root) without Discord+. Add Discord+ there too?") {
+            $res = Join-Path $inst.Latest.FullName "resources"
+            Rename-Item -Path (Join-Path $res "app.asar") -NewName "_app.asar"
+            Copy-Item -Path $loader -Destination (Join-Path $res "app.asar") -Recurse -Force
+            $inst.Patched = $true
+            $launcherPatchedRoots += $inst.Root
+            Write-Ok "Patched $($inst.Root)\$($inst.Latest.Name)"
+        }
+    }
+
+    # The Discord you actually use: the one pinned to the taskbar, else the one that was running.
+    $pin = Get-ChildItem -Path $PinDir -Filter "*.lnk" -ErrorAction SilentlyContinue | Where-Object {
+        $target = (New-Object -ComObject WScript.Shell).CreateShortcut($_.FullName).TargetPath
+        $installs | Where-Object { $target -like "$($_.Root)\*" }
+    } | Select-Object -First 1
+    if ($pin) {
+        $pinTarget = (New-Object -ComObject WScript.Shell).CreateShortcut($pin.FullName).TargetPath
+        $primary = $installs | Where-Object { $pinTarget -like "$($_.Root)\*" } | Select-Object -First 1
+    }
+    if (-not $primary) { $primary = $installs | Where-Object { $script:ClosedRoots -contains $_.Root -and $_.Patched } | Select-Object -First 1 }
+    if (-not $primary) { $primary = $installs | Where-Object { $_.Patched } | Select-Object -First 1 }
+
+    if (-not $primary -or -not $primary.Patched) {
+        Write-Note "No patched Discord install found; skipping shortcuts. Run INSTALL.bat -Reinject."
+    } else {
+        $flavor = $primary.Flavor
         $label = if ($flavor -eq "Discord") { "Discord+" } else { "Discord+ " + $flavor.Substring(7) }
-        $icon = Join-Path $env:LOCALAPPDATA "$flavor\app.ico"
-        if (-not (Test-Path $icon)) { $icon = Join-Path $env:LOCALAPPDATA "$flavor\Update.exe" }
-        foreach ($dir in @($desktop, $startMenu)) {
-            $lnkPath = Join-Path $dir "$label.lnk"
-            $lnk = $shell.CreateShortcut($lnkPath)
-            $lnk.TargetPath = Join-Path $env:WINDIR "System32\wscript.exe"
-            $lnk.Arguments = "`"$vbs`" -Flavor $flavor -Mode launch"
-            $lnk.IconLocation = "$icon,0"
-            $lnk.Description = "Open $flavor with Discord+ (re-patches after Discord updates)"
-            $lnk.WorkingDirectory = $StateDir
-            $lnk.Save()
-            $launcherShortcuts += $lnkPath
+        $launchArgs = "`"$vbs`" -Flavor $flavor -Root `"$($primary.Root)`" -Mode launch"
+        $icon = Join-Path $primary.Root "app.ico"
+        if (-not (Test-Path $icon)) { $icon = Join-Path $primary.Root "Update.exe" }
+        # Discord's own AppUserModelID, so the window groups with a Discord+ pin.
+        $appId = if ($pin) { [DiscordPlus.Shortcut]::GetAppId($pin.FullName) } else { "" }
+        if (-not $appId) { $appId = "com.squirrel.$flavor.$flavor" }
+        $desc = "Open $flavor with Discord+ (re-patches after Discord updates)"
+        Write-Note "Using $($primary.Root)"
+
+        if ($pin) {
+            if (Ask "Replace Discord on your taskbar with Discord+?") {
+                $pinPath = $pin.FullName
+                $pinBackup = Join-Path $StateDir ("taskbar-" + $pin.Name + ".original")
+                if (-not (Test-Path $pinBackup)) { Copy-Item -Path $pinPath -Destination $pinBackup -Force }
+                # Same file, same place on the taskbar; it now opens Discord through Discord+.
+                [DiscordPlus.Shortcut]::Write($pinPath, $wscript, $launchArgs, $StateDir, $icon, $desc, $appId)
+                Write-Ok "Taskbar: Discord now opens with Discord+"
+            }
+        } else {
+            Write-Note "Discord isn't pinned to your taskbar. Windows doesn't let installers pin apps:"
+            Write-Note "right-click Discord+ in the Start menu and choose Pin to taskbar."
         }
 
-        # At Windows login: check while Discord's own "open on startup" launches it.
-        $valueName = "DiscordPlus-$flavor"
-        $command = "`"$(Join-Path $env:WINDIR 'System32\wscript.exe')`" `"$vbs`" -Flavor $flavor -Mode check"
-        New-Item -Path $RunKey -Force | Out-Null
-        Set-ItemProperty -Path $RunKey -Name $valueName -Value $command
-        $launcherRunValues += $valueName
-        Write-Ok "$label shortcuts (desktop + Start menu) and login check ready"
+        if (Ask "Add a Discord+ shortcut to the desktop?") {
+            $lnk = Join-Path ([Environment]::GetFolderPath("Desktop")) "$label.lnk"
+            [DiscordPlus.Shortcut]::Write($lnk, $wscript, $launchArgs, $StateDir, $icon, $desc, $appId)
+            $launcherShortcuts += $lnk
+            Write-Ok "Desktop: $label"
+        }
+
+        if (Ask "Add Discord+ to the Start menu?") {
+            $menuDir = Join-Path ([Environment]::GetFolderPath("Programs")) "Discord+"
+            New-Item -ItemType Directory -Force -Path $menuDir | Out-Null
+            $lnk = Join-Path $menuDir "$label.lnk"
+            [DiscordPlus.Shortcut]::Write($lnk, $wscript, $launchArgs, $StateDir, $icon, $desc, $appId)
+            $launcherShortcuts += $lnk
+            Write-Ok "Start menu: $label"
+        }
+
+        if (Ask "Check Discord at Windows login, so Discord+ survives updates?") {
+            $valueName = "DiscordPlus-$flavor"
+            $command = "`"$wscript`" `"$vbs`" -Flavor $flavor -Root `"$($primary.Root)`" -Mode check"
+            New-Item -Path $RunKey -Force | Out-Null
+            Set-ItemProperty -Path $RunKey -Name $valueName -Value $command
+            $launcherRunValues += $valueName
+            Write-Ok "Login check on"
+        }
     }
-    Write-Note "Open Discord with the Discord+ shortcut (or pin it to the taskbar) so updates get re-patched."
 }
 
 # -- 8. Remember what we did ----------------------------------------------------
@@ -269,9 +364,13 @@ New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
     clonedByInstaller = $clonedByUs
     injected          = $injected
     pluginPath        = $pluginTarget
-    pluginVersion     = "1.8.0"
+    pluginVersion     = "1.9.0"
     launcherShortcuts = $launcherShortcuts
     launcherRunValues = $launcherRunValues
+    launcherPatchedRoots = $launcherPatchedRoots
+    pinPath           = $pinPath
+    pinBackup         = $pinBackup
+    discordRoot       = if ($primary) { $primary.Root } else { $null }
     installedAt       = (Get-Date).ToString("s")
 } | ConvertTo-Json | Set-Content -Path $StateFile -Encoding UTF8
 
@@ -282,24 +381,23 @@ Write-Host "  - To undo: disable the plugin in Discord, or run UNINSTALL.bat."
 
 # -- 9. Start Discord with Discord+ ------------------------------------------------
 if ($injected -and -not $SkipInject -and -not $NoStart) {
-    # Reopen what was running; if nothing was, the first installed of Stable, PTB, Canary.
-    $toStart = @($script:ClosedFlavors)
-    if (-not $toStart) {
-        $toStart = @($Flavors | Where-Object { Test-Path (Join-Path $env:LOCALAPPDATA "$_\Update.exe") } | Select-Object -First 1)
-    }
-    $vbsLauncher = Join-Path $StateDir "DiscordPlus.vbs"
-    foreach ($flavor in $toStart) {
-        $updater = Join-Path $env:LOCALAPPDATA "$flavor\Update.exe"
-        if ((Test-Path $vbsLauncher) -and ($patchedFlavors -contains $flavor) -and -not $NoLauncher) {
+    if (Ask "Start Discord now?") {
+        $vbsLauncher = Join-Path $StateDir "DiscordPlus.vbs"
+        if ($primary -and $primary.Patched -and (Test-Path $vbsLauncher) -and -not $NoLauncher) {
             # Through the launcher, so an update applied right now is re-patched too.
-            Write-Step "Starting $flavor with Discord+"
-            Start-Process -FilePath (Join-Path $env:WINDIR "System32\wscript.exe") -ArgumentList "`"$vbsLauncher`"", "-Flavor", $flavor, "-Mode", "launch"
-        } elseif (Test-Path $updater) {
-            Write-Step "Starting $flavor with Discord+"
-            Start-Process $updater -ArgumentList "--processStart", "$flavor.exe"
+            Write-Step "Starting $($primary.Flavor) with Discord+"
+            Start-Process -FilePath (Join-Path $env:WINDIR "System32\wscript.exe") -ArgumentList "`"$vbsLauncher`"", "-Flavor", $primary.Flavor, "-Root", "`"$($primary.Root)`"", "-Mode", "launch"
         } else {
-            Write-Note "Couldn't find $updater; start $flavor yourself."
+            $toStart = @($script:ClosedFlavors)
+            if (-not $toStart) { $toStart = @($Flavors | Where-Object { Test-Path (Join-Path $env:LOCALAPPDATA "$_\Update.exe") } | Select-Object -First 1) }
+            foreach ($flavor in $toStart) {
+                $updater = Join-Path $env:LOCALAPPDATA "$flavor\Update.exe"
+                if (Test-Path $updater) {
+                    Write-Step "Starting $flavor with Discord+"
+                    Start-Process $updater -ArgumentList "--processStart", "$flavor.exe"
+                }
+            }
+            if (-not $toStart) { Write-Note "Couldn't find a Discord install to start; open Discord yourself." }
         }
     }
-    if (-not $toStart) { Write-Note "Couldn't find a Discord install to start; open Discord yourself." }
 }

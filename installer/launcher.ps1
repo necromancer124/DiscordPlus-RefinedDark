@@ -17,7 +17,8 @@
     repairs + restarts if needed.
 
     A copy of Vencord's loader is kept in %LOCALAPPDATA%\DiscordPlus\vencord-loader.asar, so a repair is
-    possible even after Discord has deleted every older (patched) version folder.
+    possible even after Discord has deleted every older (patched) version folder, and in Discord installs that
+    Vencord's installer never touched (e.g. a per-user copy under C:\ProgramData\<user>\Discord).
     Log: %LOCALAPPDATA%\DiscordPlus\launcher.log
 #>
 param(
@@ -25,16 +26,18 @@ param(
     [string]$Flavor = "Discord",
     [ValidateSet("launch", "check")]
     [string]$Mode = "launch",
-    # Testing only: a fake Discord folder; no processes are started or stopped.
-    [string]$DiscordRoot,
+    # The Discord install folder (has Update.exe and app-* folders). Default: %LOCALAPPDATA%\<Flavor>.
+    [string]$Root,
+    # Testing only: $Root is a fake Discord folder; no processes are started or stopped.
+    [switch]$Test,
     [int]$WatchSeconds = 180
 )
 
 $ErrorActionPreference = "Continue"
-$Testing = [bool]$DiscordRoot
-$Base = if ($DiscordRoot) { $DiscordRoot } else { Join-Path $env:LOCALAPPDATA $Flavor }
+$Testing = [bool]$Test
+$Base = if ($Root) { $Root.TrimEnd("\") } else { Join-Path $env:LOCALAPPDATA $Flavor }
 $StateDir = Join-Path $env:LOCALAPPDATA "DiscordPlus"
-if ($Testing) { $StateDir = Join-Path $DiscordRoot "_state" }
+if ($Testing) { $StateDir = Join-Path $Base "_state" }
 $Loader = Join-Path $StateDir "vencord-loader.asar"
 $LogFile = Join-Path $StateDir "launcher.log"
 $Updater = Join-Path $Base "Update.exe"
@@ -93,9 +96,10 @@ function Repair-Version([string]$dir) {
     }
 }
 
+# Only this install's processes (two installs can both be called Discord.exe).
 function Get-DiscordProcesses {
     if ($Testing) { return @() }
-    return @(Get-Process -Name $Flavor -ErrorAction SilentlyContinue)
+    return @(Get-Process -Name $Flavor -ErrorAction SilentlyContinue | Where-Object { -not $_.Path -or $_.Path -like "$Base\*" })
 }
 
 function Stop-Discord {

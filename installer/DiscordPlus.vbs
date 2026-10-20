@@ -5,7 +5,8 @@ Set fso = CreateObject("Scripting.FileSystemObject")
 dir = fso.GetParentFolderName(WScript.ScriptFullName)
 args = ""
 For i = 0 To WScript.Arguments.Count - 1
-    args = args & " " & WScript.Arguments(i)
+    ' Re-quote every argument: WScript strips the quotes, and install paths may contain spaces.
+    args = args & " """ & WScript.Arguments(i) & """"
 Next
 Set shell = CreateObject("WScript.Shell")
 shell.Run "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & dir & "\launcher.ps1""" & args, 0, False

@@ -66,10 +66,35 @@ function Remove-Launcher {
     $links = @($state.launcherShortcuts) + @("Discord+", "Discord+ PTB", "Discord+ Canary" | ForEach-Object { Join-Path $desktop "$_.lnk" })
     foreach ($lnk in $links) { if ($lnk -and (Test-Path $lnk)) { Remove-Item -Force $lnk } }
     if (Test-Path $startMenu) { Remove-Item -Recurse -Force $startMenu }
+    # Put the original Discord pin back on the taskbar (same file, same position).
+    if ($state.pinBackup -and $state.pinPath -and (Test-Path $state.pinBackup)) {
+        Copy-Item -Path $state.pinBackup -Destination $state.pinPath -Force
+        Remove-Item -Force $state.pinBackup
+        Write-Ok "Taskbar: restored the original Discord pin"
+    }
     foreach ($f in @("launcher.ps1", "DiscordPlus.vbs", "vencord-loader.asar", "launcher.log")) {
         Remove-Item -Force (Join-Path $StateDir $f) -ErrorAction SilentlyContinue
     }
     Write-Ok "Removed the Discord+ shortcuts, login check and launcher"
+}
+
+# Undo every Vencord patch in every Discord install (versions the launcher patched after updates, and installs
+# Vencord's own uninstaller doesn't know about, like C:\ProgramData\<user>\Discord).
+function Remove-AllPatches {
+    $roots = @($state.launcherPatchedRoots) + @("Discord", "DiscordPTB", "DiscordCanary" | ForEach-Object {
+        (Join-Path $env:LOCALAPPDATA $_), (Join-Path $env:ProgramData (Join-Path $env:USERNAME $_))
+    })
+    foreach ($root in $roots | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique) {
+        foreach ($dir in Get-ChildItem -Path $root -Directory -Filter "app-*" -ErrorAction SilentlyContinue) {
+            $res = Join-Path $dir.FullName "resources"
+            $original = Join-Path $res "_app.asar"
+            if (-not (Test-Path $original)) { continue }
+            $loader = Join-Path $res "app.asar"
+            if (Test-Path $loader) { Remove-Item -Recurse -Force $loader }
+            Rename-Item -Path $original -NewName "app.asar"
+            Write-Ok "Restored the original Discord in $($dir.FullName)"
+        }
+    }
 }
 if (-not (Test-Path (Join-Path $VencordDir "package.json"))) { Fail "$VencordDir doesn't look like a Vencord checkout." }
 
@@ -112,6 +137,7 @@ Write-Host "    The official Vencord installer opens next. Pick the same Discord
 Push-Location $VencordDir
 try { Invoke-Native "Vencord uninject" { pnpm uninject } } finally { Pop-Location }
 Write-Ok "Vencord removed from Discord"
+Remove-AllPatches
 
 if ($state.clonedByInstaller) {
     Write-Step "Deleting the Vencord source the installer downloaded ($VencordDir)"

@@ -1,5 +1,17 @@
 # Testing and verification
 
+## v1.9.0 — installer questions, taskbar, multiple installs (2026-10-20)
+- Install discovery (read-only, on the author's PC): found `%LOCALAPPDATA%\Discord` (patched) and
+  `C:\ProgramData\<user>\Discord` (not patched); the taskbar pin points to the ProgramData one, which was chosen.
+- `ShortcutTools.cs` in PowerShell 5.1 and 7: read the real pin's AppUserModelID (`com.squirrel.Discord.Discord`);
+  rewrote a *copy* of the pin to the launcher with that ID kept and Discord's icon; restoring the backup gave a
+  byte-identical file.
+- Launcher `-Root` with a path containing spaces, through `DiscordPlus.vbs`: patched as expected.
+- `Remove-AllPatches` on a fake folder restored the original `app.asar` and left a vanilla version untouched.
+  **Mistake while testing:** the function also walks the real install folders, and the test wasn't isolated, so it
+  un-patched the real `%LOCALAPPDATA%\Discord` (9262, 9264). Running `INSTALL.bat` re-injects (it now does so by
+  itself when nothing is patched). Lesson: test functions that know real paths only with those paths overridden.
+
 ## v1.8.0 — launcher (2026-10-20)
 `launcher.ps1 -DiscordRoot <fake folder>` (test mode: no processes touched), PowerShell 7 and 5.1:
 vanilla newest version patched before start (`app.asar`→`_app.asar`, loader copied in); an update created mid-watch

@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.9.0 — 2026-10-20
+- **Asks for each piece:** the installer now asks separately whether to replace Discord on the **taskbar** with
+  Discord+, add a **desktop** shortcut, add it to the **Start menu**, **check at Windows login**, and **start
+  Discord now**. `-Yes` answers all with yes.
+- **Taskbar:** the existing Discord pin is rewritten in place (same position, Discord's icon and its
+  AppUserModelID `com.squirrel.Discord.Discord`, so the window still groups with the pin; via
+  `installer/ShortcutTools.cs`). The original pin is backed up and `UNINSTALL.bat` restores it. If Discord isn't
+  pinned, the installer explains how to pin Discord+ (Windows doesn't let installers pin apps).
+- **Every Discord install:** besides `%LOCALAPPDATA%\Discord`, the per-user copy Discord's machine-wide installer
+  keeps in `C:\ProgramData\<user>\Discord` is found, offered Discord+, and used for the shortcuts when it's the
+  one you launch (taskbar pin, or the one that was running). The launcher takes `-Root` and only touches that
+  install's processes.
+- If no Discord install has Vencord any more, `INSTALL.bat` injects again without needing `-Reinject`.
+- Full uninstall (`UNINSTALL.bat` → 2) also restores the original Discord in every install and every version the
+  launcher patched.
+
 ## v1.8.0 — 2026-10-20
 - **Survives Discord updates.** New Discord+ launcher (`installer/launcher.ps1`, run hidden via `DiscordPlus.vbs`):
   "Discord+" shortcuts on the desktop and in the Start menu, and a check at Windows login. Before Discord starts it
