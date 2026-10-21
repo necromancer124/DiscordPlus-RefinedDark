@@ -74,7 +74,9 @@ export function App() {
     // The header is always part of Discord+ home (and stays in classic view so you can switch back);
     // elsewhere it's only shown if we can push Discord's content down below it.
     const showHeader = showHome || (onHome && classic) || (s.globalHeader && layout.canPush);
-    const pushNative = showHeader && !showHome;
+    // Discord's native content always moves below the header, also under Discord+ Home: with a transparent
+    // theme nothing native may sit behind the header or the Home overlay.
+    const pushNative = showHeader;
     // The Friends / DM column only goes away while the header (with your user controls) replaces it.
     const hideDmColumn = s.hideDmColumn && showHeader && s.headerUserControls;
     // Outside servers the native user/voice panel is redundant: header has your controls, the call manager has the call.
@@ -101,8 +103,10 @@ export function App() {
     }, [pushNative, hideDmColumn, s.fullWidthDms, dockActive, layout.kind, layout.route, showHeader, s.headerUserControls, s.hideQuestPromo]);
 
     useEffect(() => {
+        // With "Apply theme" off the accent comes from the user's theme (--brand-500, see style.css).
         const accent = /^#[\da-f]{6}$/i.test(s.accent) ? s.accent : "#7478f8";
-        document.body.style.setProperty("--dp-accent", accent);
+        if (s.applyTheme) document.body.style.setProperty("--dp-accent", accent);
+        else document.body.style.removeProperty("--dp-accent");
         document.body.style.setProperty("--dp-header-h", `${HEADER_HEIGHT}px`);
         setBodyClass("dp-theme", s.applyTheme);
         setBodyClass("dp-reduce-motion", s.reduceMotion);

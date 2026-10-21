@@ -1,5 +1,12 @@
 # Testing and verification
 
+## v1.10.0 — theme colours and transparent themes (2026-10-21, issue #1)
+Harness: theme on → unchanged values (Home `#15161c`, header `#0d0e13`, inline accent `#7478f8`). Theme off →
+Home/header/text take the page's Discord variables, inline accent removed, `--brand-500` drives the accent
+(checked with transitions off; a hidden browser pane doesn't advance CSS transitions). Simulated transparent theme
+(theme variables `transparent`, gradient background): header and Home transparent, native page and DM list
+pushed and hidden, nothing native shows through.
+
 ## v1.9.0 — installer questions, taskbar, multiple installs (2026-10-20)
 - Install discovery (read-only, on the author's PC): found `%LOCALAPPDATA%\Discord` (patched) and
   `C:\ProgramData\<user>\Discord` (not patched); the taskbar pin points to the ProgramData one, which was chosen.

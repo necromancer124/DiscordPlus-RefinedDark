@@ -111,7 +111,7 @@ All in **Settings → Vencord → Plugins → DiscordPlus**, or the sliders icon
 | Floating dock instead of Discord's user panel / snap to edges | off / on |
 | Floating call manager | on |
 | Hide Discord's bottom-left user/voice panel | on, but only applies while the floating dock **and** call manager are on |
-| Refined Dark theme / accent colour | on / `#7478f8` |
+| Refined Dark theme / accent colour | on / `#7478f8` (theme off: Discord+ uses your own theme's colours and accent) |
 | Card density · message previews · activities · default filter | comfortable · on · on · All |
 | Remove Friends / DM column · user controls in header | on · on |
 | Quest promo card → dot on the Quests tab | on |

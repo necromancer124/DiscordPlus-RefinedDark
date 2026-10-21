@@ -26,6 +26,66 @@ body {
     --dp-radius: 11px;
     --dp-duration: 160ms;
     --dp-header-h: 52px;
+
+    /* Component colours (Refined Dark values). Everything Discord+ draws uses these tokens. */
+    --dp-header-bg: var(--background-base-lowest, #0d0e13);
+    --dp-nav-hover: #242637;
+    --dp-chip: #292b36;
+    --dp-chip-hover: #32343f;
+    --dp-avatar-bg: #323543;
+    --dp-card-line: #2a2c36;
+    --dp-card-hover: #20212a;
+    --dp-card-unread: #1e202c;
+    --dp-card-unread-line: #484872;
+    --dp-line-hover: #474958;
+    --dp-tile: #22242d;
+    --dp-tile-line: #30333c;
+    --dp-tile-hover: #2a2c36;
+    --dp-tile-line-hover: #797b90;
+    --dp-dock: #20212b;
+    --dp-media: #0d0e13;
+    --dp-offline-text: #b3b4bc;
+    --dp-preview-text: #a5a7b8;
+    --dp-scrollbar: #34364a;
+}
+
+/* "Apply theme" off: Discord+ takes its colours from the user's own Discord theme (Vencord themes included),
+   with the Refined Dark values only as fallbacks. Newer and older Discord variable names are both tried. */
+body:not(.dp-theme) {
+    --dp-bg: var(--background-base-lowest, var(--background-tertiary, #101116));
+    --dp-surface: var(--background-base-low, var(--background-primary, #15161c));
+    --dp-card: var(--background-surface-high, var(--background-secondary, #191a20));
+    --dp-raised: var(--background-surface-higher, var(--background-floating, #1c1d25));
+    --dp-hover: var(--background-modifier-hover, #252630);
+    --dp-line: var(--border-subtle, var(--background-modifier-accent, #2a2b35));
+    --dp-line-strong: var(--border-normal, var(--border-strong, #383b4d));
+    --dp-text: var(--text-default, var(--text-normal, #f1f1f5));
+    --dp-secondary: var(--header-secondary, var(--text-muted, #a1a3b2));
+    --dp-muted: var(--text-muted, #737685);
+    --dp-accent: var(--brand-500, var(--brand-experiment, #7478f8));
+    --dp-green: var(--status-positive, var(--green-360, #43b581));
+    --dp-yellow: var(--status-warning, var(--yellow-300, #f0b74a));
+    --dp-red: var(--status-danger, var(--red-400, #f04755));
+
+    --dp-header-bg: var(--background-base-lowest, var(--background-tertiary, #0d0e13));
+    --dp-nav-hover: var(--background-modifier-selected, var(--dp-hover));
+    --dp-chip: var(--background-modifier-accent, color-mix(in srgb, var(--dp-text) 10%, transparent));
+    --dp-chip-hover: var(--background-modifier-hover, color-mix(in srgb, var(--dp-text) 14%, transparent));
+    --dp-avatar-bg: var(--dp-chip);
+    --dp-card-line: var(--dp-line);
+    --dp-card-hover: color-mix(in srgb, var(--dp-card), var(--dp-text) 5%);
+    --dp-card-unread: color-mix(in srgb, var(--dp-card), var(--dp-accent) 8%);
+    --dp-card-unread-line: color-mix(in srgb, var(--dp-accent) 45%, transparent);
+    --dp-line-hover: var(--dp-line-strong);
+    --dp-tile: var(--dp-card);
+    --dp-tile-line: var(--dp-line);
+    --dp-tile-hover: var(--dp-card-hover);
+    --dp-tile-line-hover: var(--dp-line-strong);
+    --dp-dock: var(--dp-raised);
+    --dp-media: #000;
+    --dp-offline-text: var(--dp-secondary);
+    --dp-preview-text: var(--dp-secondary);
+    --dp-scrollbar: var(--scrollbar-auto-thumb, var(--dp-line-strong));
 }
 
 /* ── 2. "Vanilla+" theme: Discord's own variables, re-tuned. Only applied with body.dp-theme. ── */
@@ -112,6 +172,12 @@ body.dp-hide-dm-column .dp-dm-column {
     display: none !important;
 }
 
+/* Under Discord+ Home the native page is pushed below the header and hidden, so a transparent theme shows
+   its own background through Discord+ instead of Discord's Friends page and toolbar. */
+body.dp-home-active .dp-pushed {
+    visibility: hidden !important;
+}
+
 /* Whole sections of the bottom-left panel removed by tidyPanels() (quest card, user row). */
 .dp-panel-hidden {
     display: none !important;
@@ -191,7 +257,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     display: block;
     flex: none;
     border-radius: 50%;
-    background: #323543;
+    background: var(--dp-avatar-bg);
     color: #fff;
 }
 
@@ -236,7 +302,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     border-radius: 6px;
 }
 
-.dp-time { flex: none; margin-left: auto; font-size: 10px; color: #707380; white-space: nowrap; }
+.dp-time { flex: none; margin-left: auto; font-size: 10px; color: var(--dp-muted); white-space: nowrap; }
 
 .dp-tag {
     margin-left: 7px;
@@ -244,7 +310,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     font-size: 10px;
     font-weight: 500;
     color: var(--dp-secondary);
-    background: #292b36;
+    background: var(--dp-chip);
     border-radius: 5px;
 }
 
@@ -260,7 +326,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     gap: 12px;
     padding: 0 16px;
     /* Same surface as Discord's title bar and server rail, so the top reads as one bar. */
-    background: var(--background-base-lowest, var(--background-tertiary, #0d0e13));
+    background: var(--dp-header-bg);
     box-sizing: border-box;
 }
 
@@ -280,8 +346,8 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     transition: background-color var(--dp-duration) ease, color var(--dp-duration) ease;
 }
 
-.dp-nav-item:hover { background: #242637 !important; color: var(--dp-text) !important; }
-.dp-nav-item.dp-active { background: #242637 !important; color: var(--dp-text) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dp-accent) 35%, transparent); }
+.dp-nav-item:hover { background: var(--dp-nav-hover) !important; color: var(--dp-text) !important; }
+.dp-nav-item.dp-active { background: var(--dp-nav-hover) !important; color: var(--dp-text) !important; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dp-accent) 35%, transparent); }
 .dp-nav-item.dp-active .dp-icon { color: var(--dp-accent); }
 
 .dp-nav-badge {
@@ -304,7 +370,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     margin-left: auto;
     padding: 0 12px;
     color: var(--dp-muted);
-    background: #101116;
+    background: var(--dp-bg);
     border: 1px solid var(--dp-line);
     border-radius: 9px;
 }
@@ -375,7 +441,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     margin-left: -3px;
     background: var(--dp-accent);
     border-radius: 50%;
-    box-shadow: 0 0 0 2px var(--background-base-lowest, #0d0e13);
+    box-shadow: 0 0 0 2px var(--dp-header-bg);
 }
 
 .dp-header-user {
@@ -385,7 +451,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     padding-left: 10px;
     margin-left: 2px;
     border-left: 1px solid var(--dp-line);
-    --dp-presence-ring: var(--background-base-lowest, #0d0e13);
+    --dp-presence-ring: var(--dp-header-bg);
 }
 
 .dp-header-me { display: grid !important; place-items: center; width: 36px; height: 36px; border-radius: 50%; }
@@ -404,7 +470,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     border-left: 1px solid var(--dp-line);
     border-top-left-radius: 12px;
     scrollbar-width: thin;
-    scrollbar-color: #34364a transparent;
+    scrollbar-color: var(--dp-scrollbar) transparent;
 }
 
 .dp-home-inner { padding: 26px 32px 120px; max-width: 1800px; }
@@ -439,7 +505,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dp-accent) 32%, transparent);
 }
 
-.dp-count { padding: 1px 5px; font-size: 11px; background: #292b36; border-radius: 6px; }
+.dp-count { padding: 1px 5px; font-size: 11px; background: var(--dp-chip); border-radius: 6px; }
 
 .dp-select {
     height: 34px;
@@ -447,7 +513,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     padding: 0 10px;
     font-size: 13px;
     color: var(--dp-secondary);
-    background: #131419;
+    background: var(--dp-bg);
     border: 1px solid var(--dp-line);
     border-radius: 8px;
 }
@@ -468,15 +534,15 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     overflow: hidden;
     text-align: left;
     background: var(--dp-card);
-    border: 1px solid #2a2c36;
+    border: 1px solid var(--dp-card-line);
     border-radius: var(--dp-radius);
     cursor: pointer;
     --dp-presence-ring: var(--dp-card);
     transition: background-color var(--dp-duration) ease, border-color var(--dp-duration) ease;
 }
 
-.dp-card:hover { background: #20212a; border-color: #474958; --dp-presence-ring: #20212a; }
-.dp-card.dp-has-unread { background: #1e202c; border-color: #484872; --dp-presence-ring: #1e202c; }
+.dp-card:hover { background: var(--dp-card-hover); border-color: var(--dp-line-hover); --dp-presence-ring: var(--dp-card-hover); }
+.dp-card.dp-has-unread { background: var(--dp-card-unread); border-color: var(--dp-card-unread-line); --dp-presence-ring: var(--dp-card-unread); }
 .dp-compact .dp-card { gap: 8px; min-height: 0; padding: 9px 10px; }
 
 .dp-card-top { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -494,7 +560,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
 
 .dp-card-name { display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 600; color: var(--dp-text); }
 .dp-card-sub { font-size: 12px; color: var(--dp-muted); }
-.dp-card.dp-offline .dp-card-name { color: #b3b4bc; }
+.dp-card.dp-offline .dp-card-name { color: var(--dp-offline-text); }
 .dp-fav { color: var(--dp-accent); }
 
 .dp-card-menu {
@@ -543,7 +609,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
 
 .dp-accept { color: #fff !important; background: var(--dp-green) !important; }
 .dp-accept:hover { background: #3ca374 !important; }
-.dp-deny { color: var(--dp-secondary) !important; background: #292b36 !important; }
+.dp-deny { color: var(--dp-secondary) !important; background: var(--dp-chip) !important; }
 .dp-deny:hover { color: #fff !important; background: var(--dp-red) !important; }
 
 .dp-card-preview {
@@ -553,8 +619,8 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     min-width: 0;
     padding-top: 9px;
     font-size: 12px;
-    color: #a5a7b8;
-    border-top: 1px solid #2a2c35;
+    color: var(--dp-preview-text);
+    border-top: 1px solid var(--dp-card-line);
 }
 
 .dp-card-preview {
@@ -568,7 +634,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
 
 .dp-card-preview:hover { background: var(--dp-accent-soft); color: var(--dp-text); }
 .dp-card-preview:hover .dp-icon { color: var(--dp-accent); }
-.dp-card-preview .dp-icon { color: #787b8a; }
+.dp-card-preview .dp-icon { color: var(--dp-muted); }
 .dp-card-preview-text { flex: 1; min-width: 0; }
 .dp-compact .dp-card-preview { padding-top: 6px; }
 
@@ -588,7 +654,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     transition: background-color var(--dp-duration) ease, border-color var(--dp-duration) ease;
 }
 
-.dp-row:hover { background: var(--dp-card) !important; border-color: #2a2c36 !important; --dp-presence-ring: var(--dp-card); }
+.dp-row:hover { background: var(--dp-card) !important; border-color: var(--dp-card-line) !important; --dp-presence-ring: var(--dp-card); }
 .dp-row-text { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
 .dp-row-title { display: flex; align-items: center; font-size: 14px; font-weight: 600; }
 .dp-row-sub { font-size: 12px; color: var(--dp-muted); }
@@ -605,15 +671,15 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     gap: 6px;
     min-height: 56px;
     padding: 8px;
-    background: #20212b;
+    background: var(--dp-dock);
     border: 1px solid var(--dp-line-strong);
     border-radius: 12px;
     box-shadow: 0 8px 27px #0008;
     box-sizing: border-box;
-    --dp-presence-ring: #20212b;
+    --dp-presence-ring: var(--dp-dock);
 }
 
-.dp-grip { display: grid; place-items: center; width: 14px; height: 36px; color: #676978; cursor: grab; touch-action: none; }
+.dp-grip { display: grid; place-items: center; width: 14px; height: 36px; color: var(--dp-muted); cursor: grab; touch-action: none; }
 .dp-dragging, .dp-dragging .dp-grip, .dp-dragging .dp-call-head { cursor: grabbing; user-select: none; }
 
 .dp-dock-user {
@@ -649,7 +715,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     overflow: hidden;
     resize: both;
     background: var(--dp-raised);
-    border: 1px solid #373a49;
+    border: 1px solid var(--dp-line-strong);
     border-radius: 13px;
     box-shadow: 0 13px 38px #0009;
     box-sizing: border-box;
@@ -715,14 +781,14 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     min-width: 0;
     min-height: 102px;
     padding: 10px 6px !important;
-    background: #22242d !important;
-    border: 1px solid #30333c !important;
+    background: var(--dp-tile) !important;
+    border: 1px solid var(--dp-tile-line) !important;
     border-radius: 9px;
     transition: border-color var(--dp-duration) ease, background-color var(--dp-duration) ease;
 }
 
-.dp-tile { --dp-presence-ring: #22242d; }
-.dp-tile:hover { background: #2a2c36 !important; border-color: #797b90 !important; --dp-presence-ring: #2a2c36; }
+.dp-tile { --dp-presence-ring: var(--dp-tile); }
+.dp-tile:hover { background: var(--dp-tile-hover) !important; border-color: var(--dp-tile-line-hover) !important; --dp-presence-ring: var(--dp-tile-hover); }
 .dp-tile.dp-talking { border-color: var(--dp-green) !important; box-shadow: inset 0 0 0 1px #43b58155; }
 .dp-tile-name { width: 100%; overflow: hidden; font-size: 12px; font-weight: 600; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .dp-tile-sub { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--dp-secondary); }
@@ -736,7 +802,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     width: 20px;
     height: 20px;
     color: var(--dp-red);
-    background: #15161c;
+    background: var(--dp-surface);
     border-radius: 50%;
 }
 
@@ -751,12 +817,12 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     height: 36px;
     font-size: 13px;
     font-weight: 600;
-    background: #292b36 !important;
-    border: 1px solid #3a3c4b !important;
+    background: var(--dp-chip) !important;
+    border: 1px solid var(--dp-line-strong) !important;
     border-radius: 9px;
 }
 
-.dp-return:hover { background: #32343f !important; }
+.dp-return:hover { background: var(--dp-chip-hover) !important; }
 
 .dp-hangup {
     display: grid !important;
@@ -835,7 +901,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     padding: 3px 8px !important;
     font-size: 12px;
     font-weight: 600;
-    background: #292b36 !important;
+    background: var(--dp-chip) !important;
     border-radius: 6px;
 }
 
@@ -848,8 +914,8 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     width: 100%;
     aspect-ratio: 16 / 9;
     overflow: hidden;
-    background: #0d0e13;
-    border: 1px solid #30333c;
+    background: var(--dp-media);
+    border: 1px solid var(--dp-tile-line);
     border-radius: 9px;
 }
 
@@ -897,8 +963,8 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     height: 54px;
     overflow: hidden;
     color: var(--dp-muted);
-    background: #0d0e13;
-    border: 1px solid #30333c;
+    background: var(--dp-media);
+    border: 1px solid var(--dp-tile-line);
     border-radius: 6px;
 }
 
@@ -918,7 +984,7 @@ body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [cl
     align-items: center;
     gap: 4px;
     padding: 6px;
-    background: #1c1d25;
+    background: var(--dp-raised);
     border: 1px solid var(--dp-line-strong);
     border-radius: 11px;
     box-shadow: 0 8px 24px #0007;

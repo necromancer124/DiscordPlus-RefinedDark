@@ -75,12 +75,12 @@ export const settings = definePluginSettings({
     // ── Appearance ──────────────────────────────────────────────────────
     applyTheme: {
         type: OptionType.BOOLEAN,
-        description: "Apply the Refined Dark colours to the whole client",
+        description: "Apply the Refined Dark colours to the whole client (off: Discord+ uses your own theme's colours)",
         default: true
     },
     accent: {
         type: OptionType.STRING,
-        description: "Accent colour (hex, e.g. #7478f8)",
+        description: "Accent colour with the Refined Dark theme (hex, e.g. #7478f8); off: your theme's accent",
         default: "#7478f8",
         isValid: (v: string) => /^#[\da-f]{6}$/i.test(v) || "Use a 6-digit hex colour like #7478f8"
     },

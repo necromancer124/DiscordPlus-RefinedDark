@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.10.0 — 2026-10-21
+Fixes [#1](https://github.com/necromancer124/DiscordPlus-RefinedDark/issues/1) (thanks @caffeinepx).
+- **"Apply theme" off now follows your own theme.** Every colour Discord+ draws (Home, header, search, cards,
+  dock, call manager, chips) goes through `--dp-*` tokens. With the Refined Dark theme on they keep the exact
+  Refined Dark values; with it off they map to Discord's theme variables (`--background-*`, `--text-*`,
+  `--border-*`, newer and older names, with fallbacks), and the accent comes from the theme's `--brand-500`.
+- **Transparent themes:** the header and Discord+ Home no longer let Discord's native toolbar and Friends page
+  show through. Native content is always pushed below the header (also on Home) and hidden under Discord+ Home,
+  so a transparent theme shows its own background.
+
 ## v1.9.0 — 2026-10-20
 - **Asks for each piece:** the installer now asks separately whether to replace Discord on the **taskbar** with
   Discord+, add a **desktop** shortcut, add it to the **Start menu**, **check at Windows login**, and **start
