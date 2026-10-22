@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased (branch claude/animations)
+- **Entrance animations:** when Discord+ Home opens (and on filter / sort changes, or when your friends first load)
+  the cards appear in a diagonal **wave**. Settings: **Animations** = Wave, Pop, Slide, Flip, Fade or Off, and
+  **Animation speed** = Normal, Fast or Relaxed. The Messages list animates the same way.
+- Smaller touches: cards lift slightly on hover, the header slides in when Discord starts, the call window rises
+  in, unread badges pop. "Off" turns all of these off; "Reduce motion" and Windows' reduced-motion still turn
+  off every Discord+ animation.
+
 ## v1.12.0 — 2026-10-22
 - **Fixed: everyone showed as offline after starting Discord** until the window was reloaded. Discord+ built its
   list of Discord stores while Discord was still loading, so it never heard about statuses arriving later. Stores

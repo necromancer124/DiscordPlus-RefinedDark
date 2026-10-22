@@ -123,6 +123,27 @@ export const settings = definePluginSettings({
         description: "Show a small dismissible Quests shortcut in the bottom-right corner",
         default: false
     },
+    animation: {
+        type: OptionType.SELECT,
+        description: "How your friends (and conversations) appear when Discord+ Home opens",
+        options: [
+            { label: "Wave: cards rise in a diagonal wave", value: "wave", default: true },
+            { label: "Pop: cards pop in with a little bounce", value: "pop" },
+            { label: "Slide: cards slide in from the left", value: "slide" },
+            { label: "Flip: cards flip down into place", value: "flip" },
+            { label: "Fade: cards fade in", value: "fade" },
+            { label: "Off: no entrance, hover or intro animations", value: "off" }
+        ]
+    },
+    animationSpeed: {
+        type: OptionType.SELECT,
+        description: "Speed of the entrance animation",
+        options: [
+            { label: "Normal", value: "normal", default: true },
+            { label: "Fast", value: "fast" },
+            { label: "Relaxed", value: "slow" }
+        ]
+    },
     reduceMotion: {
         type: OptionType.BOOLEAN,
         description: "Turn off Discord+ animations (system reduced-motion is always respected)",

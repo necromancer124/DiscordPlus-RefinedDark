@@ -2,7 +2,7 @@
  * Discord+ Refined Dark — the Home view that replaces the native Friends page.
  * SPDX-License-Identifier: CC-BY-NC-4.0
  */
-import { ContextMenuApi, Menu, PrivateChannelSortStore, useMemo, useState } from "@webpack/common";
+import { ContextMenuApi, Menu, PrivateChannelSortStore, useMemo, useRef, useState } from "@webpack/common";
 
 import {
     ConversationRow, friendStores, FriendRow, readConversations, readRelationships, refreshAll,
@@ -13,7 +13,7 @@ import {
     unblockUser, unignoreUser
 } from "../discordApi";
 import { FriendFilter, settings, toggleFavorite } from "../settings";
-import { Avatar } from "./common";
+import { Avatar, useEntrance } from "./common";
 import type { HomePage } from "./Header";
 import { Icon } from "./Icons";
 
@@ -109,6 +109,7 @@ function FriendCard({ row }: { row: FriendRow; }) {
         <div
             role="button"
             tabIndex={0}
+            data-dp-enter=""
             className={"dp-card" + (row.status === "offline" ? " dp-offline" : "") + (row.unread ? " dp-has-unread" : "")}
             title={`View ${row.name}'s profile`}
             onClick={activate}
@@ -203,6 +204,9 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
     };
 
     const rows = sortRows(pick(filter).filter(r => matches(r, q)), filter === "recent" && sort === "smart" ? "recent" : sort);
+    // Entrance on open, on filter / sort change, and once friends first arrive while Discord is still starting.
+    const pageRef = useRef<HTMLDivElement>(null);
+    useEntrance(pageRef, [filter, sort, rows.length > 0]);
     const sections = filter === "all" && sort !== "name"
         ? [
             { title: "Online", rows: rows.filter(r => r.status !== "offline") },
@@ -211,8 +215,8 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
         : [{ title: FILTERS.find(f => f.id === filter)!.label, rows }];
 
     return (
-        <>
-            <div className="dp-page-head">
+        <div ref={pageRef} className="dp-page">
+            <div className="dp-page-head" data-dp-enter="">
                 <Icon name="friends" size={22} />
                 <h1>Friends</h1>
                 <span className="dp-muted">{data.friends.length} friends</span>
@@ -229,7 +233,7 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
                     Add Friend
                 </button>
             </div>
-            <div className="dp-toolbar">
+            <div className="dp-toolbar" data-dp-enter="">
                 <div className="dp-filters" role="group" aria-label="Filter friends">
                     {FILTERS.map(f => {
                         const count = pick(f.id).length;
@@ -264,20 +268,20 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
             <div className={"dp-sections" + (density === "compact" ? " dp-compact" : "")}>
                 {sections.filter(s => s.rows.length).map(s => (
                     <section key={s.title} aria-label={s.title}>
-                        <h2 className="dp-section-title">{s.title} — {s.rows.length}</h2>
+                        <h2 className="dp-section-title" data-dp-enter="">{s.title} — {s.rows.length}</h2>
                         <div className="dp-grid">
                             {s.rows.map(r => <FriendCard key={r.id} row={r} />)}
                         </div>
                     </section>
                 ))}
             </div>
-        </>
+        </div>
     );
 }
 
 function ConversationItem({ row }: { row: ConversationRow; }) {
     return (
-        <button type="button" className={"dp-row" + (row.unread ? " dp-has-unread" : "")} onClick={() => openChannel(row.id)}>
+        <button type="button" data-dp-enter="" className={"dp-row" + (row.unread ? " dp-has-unread" : "")} onClick={() => openChannel(row.id)}>
             <Avatar src={row.avatar} name={row.name} status={row.group ? null : row.status} size={36} />
             <span className="dp-row-text">
                 <span className="dp-row-title">
@@ -300,10 +304,12 @@ function MessagesView({ query }: { query: string; }) {
     const rows = useMemo(readConversations, [tick]);
     const q = query.trim().toLowerCase();
     const visible = rows.filter(r => matches(r, q));
+    const pageRef = useRef<HTMLDivElement>(null);
+    useEntrance(pageRef, [visible.length > 0]);
 
     return (
-        <>
-            <div className="dp-page-head">
+        <div ref={pageRef} className="dp-page">
+            <div className="dp-page-head" data-dp-enter="">
                 <Icon name="message" size={22} />
                 <h1>Messages</h1>
                 <span className="dp-muted">Direct messages, group DMs and non-friends</span>
@@ -312,7 +318,7 @@ function MessagesView({ query }: { query: string; }) {
             <div className="dp-list">
                 {visible.map(r => <ConversationItem key={r.id} row={r} />)}
             </div>
-        </>
+        </div>
     );
 }
 

@@ -23,6 +23,9 @@ const SafeCall = ErrorBoundary.wrap(CallManager, { noop: true });
 // Declared below; a function declaration is hoisted, so wrapping it here is fine.
 const SafeClassicBar = ErrorBoundary.wrap(ClassicBar, { noop: true });
 
+const ANIMATIONS = ["wave", "pop", "slide", "flip", "fade", "off"];
+const SPEEDS = ["normal", "fast", "slow"];
+
 function useLayout(): LayoutInfo {
     const [info, setInfo] = useState<LayoutInfo>(measure);
     useEffect(() => {
@@ -87,7 +90,7 @@ function QuestChip() {
 export function App() {
     const s = settings.use([
         "homeOverlay", "globalHeader", "fullWidthDms", "floatingDock", "callManager", "hideNativeUserPanel",
-        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow"
+        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow", "animation", "animationSpeed"
     ]);
     const layout = useLayout();
     const [page, setPage] = useState<HomePage>("friends");
@@ -96,6 +99,9 @@ export function App() {
     const [dockActive, setDockActive] = useState(false);
     // Set when the call window is shown from the header while inside the call's own server.
     const [forceShowCall, setForceShowCall] = useState(false);
+    // The header slides in only right after Discord+ starts, not every time it reappears.
+    const [intro, setIntro] = useState(true);
+    useEffect(() => { const t = setTimeout(() => setIntro(false), 1500); return () => clearTimeout(t); }, []);
 
     const onHome = layout.kind === "home";
     const showHome = s.homeOverlay && onHome && !classic;
@@ -144,11 +150,15 @@ export function App() {
         setBodyClass("dp-hide-dm-column", hideDmColumn);
         setBodyClass("dp-hide-quest-promo", s.hideQuestPromo);
         setBodyClass("dp-hide-active-now", s.hideActiveNow);
+        for (const a of ANIMATIONS) setBodyClass(`dp-anim-${a}`, s.animation === a);
+        for (const sp of SPEEDS) setBodyClass(`dp-anim-speed-${sp}`, s.animationSpeed === sp);
+        setBodyClass("dp-intro", intro);
         setBodyClass("dp-header-active", showHeader);
-    }, [s.accent, s.applyTheme, s.reduceMotion, showHome, s.fullWidthDms, s.hideNativeUserPanel, s.callManager, dockActive, layout.kind, hideDmColumn, hideMePanel, s.hideQuestPromo, s.hideActiveNow, showHeader]);
+    }, [s.accent, s.applyTheme, s.reduceMotion, showHome, s.fullWidthDms, s.hideNativeUserPanel, s.callManager, dockActive, layout.kind, hideDmColumn, hideMePanel, s.hideQuestPromo, s.hideActiveNow, s.animation, s.animationSpeed, intro, showHeader]);
 
     useEffect(() => () => {
-        for (const c of ["dp-theme", "dp-reduce-motion", "dp-home-active", "dp-hide-dm-sidebar", "dp-hide-native-panel", "dp-hide-dm-column", "dp-hide-quest-promo", "dp-hide-active-now", "dp-header-active"])
+        for (const c of ["dp-theme", "dp-reduce-motion", "dp-home-active", "dp-hide-dm-sidebar", "dp-hide-native-panel", "dp-hide-dm-column", "dp-hide-quest-promo", "dp-hide-active-now", "dp-header-active", "dp-intro",
+            ...ANIMATIONS.map(a => `dp-anim-${a}`), ...SPEEDS.map(sp => `dp-anim-speed-${sp}`)])
             setBodyClass(c, false);
     }, []);
 

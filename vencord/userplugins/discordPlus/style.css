@@ -1056,6 +1056,72 @@ body:has(:is([class^="layers_"], [class*=" layers_"]) > :is([class^="layer_"], [
 .dp-call,
 .dp-dock { animation: dp-fade-in 180ms ease-out; }
 
+/* Entrance animations (settings: Animations / Animation speed). useEntrance() sets `.dp-enter` on a page for one
+   run and `--dp-i` (row + column) on each `[data-dp-enter]` item, so a grid fills in as a diagonal wave. */
+body { --dp-enter-kf: dp-enter-wave; --dp-enter-dur: 440ms; --dp-enter-step: 38ms; }
+body.dp-anim-pop { --dp-enter-kf: dp-enter-pop; }
+body.dp-anim-slide { --dp-enter-kf: dp-enter-slide; }
+body.dp-anim-flip { --dp-enter-kf: dp-enter-flip; }
+body.dp-anim-fade { --dp-enter-kf: dp-enter-fade; }
+body.dp-anim-speed-fast { --dp-enter-dur: 280ms; --dp-enter-step: 22ms; }
+body.dp-anim-speed-slow { --dp-enter-dur: 620ms; --dp-enter-step: 60ms; }
+
+body:not(.dp-anim-off) .dp-enter [data-dp-enter] {
+    animation: var(--dp-enter-kf) var(--dp-enter-dur) cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    animation-delay: calc(var(--dp-i, 0) * var(--dp-enter-step));
+}
+body.dp-anim-flip .dp-enter [data-dp-enter] { transform-origin: 50% 0; }
+
+@keyframes dp-enter-wave {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    60% { opacity: 1; }
+    to { opacity: 1; transform: none; }
+}
+@keyframes dp-enter-pop {
+    from { opacity: 0; transform: scale(0.82); }
+    65% { opacity: 1; transform: scale(1.035); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes dp-enter-slide {
+    from { opacity: 0; transform: translateX(-22px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes dp-enter-flip {
+    from { opacity: 0; transform: perspective(700px) rotateX(-40deg) translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes dp-enter-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Smaller touches, all off with "Animations: Off". */
+body:not(.dp-anim-off) .dp-card {
+    transition: background-color var(--dp-duration) ease, border-color var(--dp-duration) ease,
+        transform 180ms ease, box-shadow 180ms ease;
+}
+body:not(.dp-anim-off) .dp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgb(0 0 0 / 22%); }
+body:not(.dp-anim-off) .dp-card:active { transform: translateY(0) scale(0.985); }
+
+body.dp-intro:not(.dp-anim-off) .dp-header { animation: dp-header-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes dp-header-in {
+    from { opacity: 0; transform: translateY(-14px); }
+    to { opacity: 1; transform: none; }
+}
+
+body:not(.dp-anim-off) .dp-call { animation: dp-call-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes dp-call-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* An unread badge pops when it appears. */
+body:not(.dp-anim-off) .dp-pill { animation: dp-pill-in 320ms cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes dp-pill-in {
+    from { transform: scale(0.4); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+
 body.dp-reduce-motion #vc-discordplus-root *,
 body.dp-reduce-motion #vc-discordplus-root *::before { animation: none !important; transition: none !important; }
 

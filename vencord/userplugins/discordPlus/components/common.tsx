@@ -2,7 +2,7 @@
  * Discord+ Refined Dark — shared bits: avatar, floating-window behaviour.
  * SPDX-License-Identifier: CC-BY-NC-4.0
  */
-import { useEffect, useRef } from "@webpack/common";
+import { useEffect, useLayoutEffect, useRef } from "@webpack/common";
 
 import { STATUS_LABEL, type Status } from "../data";
 import { Placement, settings } from "../settings";
@@ -136,4 +136,50 @@ export function useFloating(
             clearTimeout(timer);
         };
     }, [opts.enabled, opts.mode]);
+}
+
+const ENTER_TIMING = {
+    normal: { step: 38, dur: 440 },
+    fast: { step: 22, dur: 280 },
+    slow: { step: 60, dur: 620 }
+};
+/** Highest stagger step; later items arrive together so long lists don't keep animating. */
+const MAX_STEP = 18;
+
+/**
+ * Play the entrance animation (settings: Animations) on the `[data-dp-enter]` children of `ref` whenever one
+ * of `deps` changes. Each item's delay follows its row + column on screen, so a grid fills in a diagonal wave.
+ * The `dp-enter` class is removed once it's done: live updates that move or add cards later never replay it.
+ */
+export function useEntrance(ref: { current: HTMLElement | null; }, deps: unknown[]) {
+    const { animation, animationSpeed } = settings.use(["animation", "animationSpeed"]);
+    useLayoutEffect(() => {
+        const root = ref.current;
+        if (!root || animation === "off") return;
+        const items = [...root.querySelectorAll<HTMLElement>("[data-dp-enter]")];
+        if (!items.length) return;
+        const rects = items.map(el => el.getBoundingClientRect());
+        const rank = (values: number[]) => {
+            const sorted = [...new Set(values.map(Math.round))].sort((a, b) => a - b);
+            return (v: number) => sorted.indexOf(Math.round(v));
+        };
+        const col = rank(rects.map(r => r.left)), row = rank(rects.map(r => r.top));
+        let last = 0;
+        items.forEach((el, i) => {
+            const step = Math.min(MAX_STEP, row(rects[i].top) + col(rects[i].left));
+            last = Math.max(last, step);
+            el.style.setProperty("--dp-i", String(step));
+        });
+        root.classList.add("dp-enter");
+        const timing = ENTER_TIMING[animationSpeed as keyof typeof ENTER_TIMING] ?? ENTER_TIMING.normal;
+        const done = () => {
+            root.classList.remove("dp-enter");
+            items.forEach(el => el.style.removeProperty("--dp-i"));
+        };
+        const t = setTimeout(done, last * timing.step + timing.dur + 100);
+        return () => {
+            clearTimeout(t);
+            done();
+        };
+    }, [animation, animationSpeed, ...deps]);
 }

@@ -1,5 +1,10 @@
 # Testing and verification
 
+## Animations (branch claude/animations, 2026-10-22)
+Harness: filter change → page gets `dp-enter`, cards get diagonal steps (3,4,5 / 4,5,6 …), animation
+`dp-enter-wave`, card 5 delayed 0.19s; class and steps removed after the run. Pop / Slide / Flip / Fade switch the
+keyframes; Off → no animation; Relaxed → 60ms step, 620ms duration. Screenshot mid-run shows the wave.
+
 ## v1.12.0 — Add Friend, Ignore (2026-10-22)
 Late stores: plugin started with PresenceStore unavailable and no presences → 0 online; store appears, presences
 arrive and emit → 11 online without reload. Refresh button: silent data change → shown after pressing it.
