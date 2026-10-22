@@ -48,8 +48,8 @@ export default definePlugin({
             if (!optimistic) recordLiveMessage(message);
         },
         // Discord finished (re)connecting or replaced all presences: re-read friends and statuses.
-        CONNECTION_OPEN: () => setTimeout(refreshAll, 500),
-        PRESENCES_REPLACE: () => setTimeout(refreshAll, 100)
+        CONNECTION_OPEN() { setTimeout(refreshAll, 500); },
+        PRESENCES_REPLACE() { setTimeout(refreshAll, 100); }
     },
 
     toolboxActions: {
