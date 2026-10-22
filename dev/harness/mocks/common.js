@@ -84,6 +84,8 @@ export const VoiceStateStore = Object.assign(new Store(), {
 export const GuildStore = Object.assign(new Store(), { getGuild: () => ({ name: "Night Shift server" }) });
 export const ApplicationStreamingStore = Object.assign(new Store(), { getAnyStreamForUser: id => id === "nova" ? { ownerId: id, guildId: "g1", channelId: "vc1" } : null });
 export const ApplicationStreamPreviewStore = Object.assign(new Store(), { getPreviewURL: async (g, c, owner) => "/avatars/" + owner + ".svg" });
+// Discord's alert dialog: auto-confirms unless window.__alertCancel is set; logged as "alert <title>".
+export const Alerts = { show: a => { window.__dpLog.push("alert " + a.title); if (!window.__alertCancel) a.onConfirm?.(); } };
 export const showToast = data => window.__dpLog.push("toast " + (data?.text ?? data));
 window.__dp = { media, MediaEngineStore, SelectedChannelStore, VoiceStateStore, ReadStateStore, unread };
 
@@ -93,7 +95,7 @@ export const SettingsRouter = { openUserSettings: () => { window.__dpLog.push("u
 // Look-alikes of Discord's Menu components and ContextMenuApi
 export const Menu = {
     Menu: ({ children }) => R.createElement("div", { className: "mock-menu" }, children),
-    MenuItem: ({ label, action }) => R.createElement("button", { className: "mock-menu-item", onClick: e => { action?.(e); ContextMenuApi.closeContextMenu(); } }, label),
+    MenuItem: ({ label, action, color }) => R.createElement("button", { className: "mock-menu-item" + (color ? " mock-" + color : ""), onClick: e => { action?.(e); ContextMenuApi.closeContextMenu(); } }, label),
     MenuSeparator: () => R.createElement("hr")
 };
 let menuRoot;

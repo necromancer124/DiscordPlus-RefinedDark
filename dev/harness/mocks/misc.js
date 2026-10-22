@@ -27,7 +27,7 @@ export const openPluginModal = () => window.__dpLog.push("plugin settings");
 // @webpack
 export const findByPropsLazy = (...props) => props.includes("addRelationship")
     ? {
-        addRelationship: async ({ userId }) => { window.__dpLog.push("accept " + userId); },
+        addRelationship: async ({ userId, type }) => { window.__dpLog.push((type === 2 ? "block " : "accept ") + userId); },
         removeRelationship: async userId => { window.__dpLog.push("remove " + userId); }
     }
     : props.includes("watchStream")

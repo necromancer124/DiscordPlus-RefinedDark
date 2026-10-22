@@ -205,8 +205,10 @@ body.dp-pip-docked :is([class^="pictureInPictureWindow_"], [class*=" pictureInPi
     z-index: 1001 !important;
 }
 
-/* While a full-screen Discord layer (User Settings, etc.) is open, step aside. */
-body:has(:is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [class*=" layer_"])) :is(.dp-header, .dp-home) {
+/* While a full-screen Discord layer (User Settings, etc.) is open, step aside. Only the app's own `layers_`
+   container counts: modals also sit in `layer_` elements (in `layerContainer_`), and two stacked modals, such as
+   a profile plus its "Remove friend" confirmation, must not hide Discord+. */
+body:has(:is([class^="layers_"], [class*=" layers_"]) > :is([class^="layer_"], [class*=" layer_"]) ~ :is([class^="layer_"], [class*=" layer_"])) :is(.dp-header, .dp-home) {
     display: none;
 }
 

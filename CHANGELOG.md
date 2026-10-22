@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.11.0 — 2026-10-22
+- **Popups no longer hide Discord+.** Two stacked Discord popups (a profile and its "Remove friend"
+  confirmation) were mistaken for a full-screen view like User Settings, so Discord+ stepped aside and Discord's
+  own Friends page showed. Only real full-screen layers make Discord+ step aside now.
+- **More in the friend card menu (⋮ / right-click):** Remove friend and Block (each asks first, with Discord's
+  own dialog); Accept / Ignore / Cancel for requests; Unblock for blocked users; Open Discord's Friends page.
+
 ## v1.10.0 — 2026-10-21
 Fixes [#1](https://github.com/necromancer124/DiscordPlus-RefinedDark/issues/1) (thanks @caffeinepx).
 - **"Apply theme" off now follows your own theme.** Every colour Discord+ draws (Home, header, search, cards,

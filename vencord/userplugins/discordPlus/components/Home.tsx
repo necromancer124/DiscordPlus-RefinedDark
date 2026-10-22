@@ -8,7 +8,9 @@ import {
     ConversationRow, FRIEND_STORES, FriendRow, readConversations, readRelationships,
     STATUS_LABEL, STATUS_ORDER, useClock, useStoreTick
 } from "../data";
-import { acceptFriendRequest, openChannel, openDm, openProfile, relativeTime, removeFriendRequest } from "../discordApi";
+import {
+    acceptFriendRequest, blockUser, openChannel, openDm, openProfile, relativeTime, removeFriend, removeFriendRequest, unblockUser
+} from "../discordApi";
 import { FriendFilter, settings, toggleFavorite } from "../settings";
 import { Avatar } from "./common";
 import type { HomePage } from "./Header";
@@ -64,9 +66,22 @@ function openFriendMenu(e: React.MouseEvent, row: FriendRow, showClassic: () => 
                     action={() => toggleFavorite(row.id)}
                 />
             )}
-            {row.kind !== "friend" && (
-                <Menu.MenuItem id="dp-classic" label="Manage in Discord's Friends page" action={showClassic} />
-            )}
+            <Menu.MenuSeparator />
+            {row.kind === "friend" && <>
+                <Menu.MenuItem id="dp-remove" label="Remove friend" color="danger" action={() => removeFriend(row.id, row.name)} />
+                <Menu.MenuItem id="dp-block" label="Block" color="danger" action={() => blockUser(row.id, row.name)} />
+            </>}
+            {row.kind === "incoming" && <>
+                <Menu.MenuItem id="dp-accept" label="Accept request" action={() => acceptFriendRequest(row.id)} />
+                <Menu.MenuItem id="dp-ignore" label="Ignore request" action={() => removeFriendRequest(row.id)} />
+                <Menu.MenuItem id="dp-block" label="Block" color="danger" action={() => blockUser(row.id, row.name)} />
+            </>}
+            {row.kind === "outgoing" && <>
+                <Menu.MenuItem id="dp-cancel" label="Cancel request" action={() => removeFriendRequest(row.id)} />
+                <Menu.MenuItem id="dp-block" label="Block" color="danger" action={() => blockUser(row.id, row.name)} />
+            </>}
+            {row.kind === "blocked" && <Menu.MenuItem id="dp-unblock" label="Unblock" action={() => unblockUser(row.id)} />}
+            <Menu.MenuItem id="dp-classic" label="Open Discord's Friends page" action={showClassic} />
         </Menu.Menu>
     ));
 }

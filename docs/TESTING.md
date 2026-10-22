@@ -1,5 +1,12 @@
 # Testing and verification
 
+## v1.11.0 — card menu, stacked popups (2026-10-22)
+Harness: two modal layers in a `layerContainer_` → Discord+ Home stays visible; a second `layer_` in `layers_`
+(User Settings) → Home steps aside; removed → back. Friend menu: Message / View profile / favourite, separator,
+Remove friend + Block (danger); confirming logs the alert then `removeRelationship` / `addRelationship({type: 2})`;
+cancelling the alert does nothing. Incoming: Accept / Ignore / Block; outgoing: Cancel / Block.
+**Unverified in the real client:** `addRelationship` with `type: 2` blocking, and `Alerts.show` styling.
+
 ## v1.10.0 — theme colours and transparent themes (2026-10-21, issue #1)
 Harness: theme on → unchanged values (Home `#15161c`, header `#0d0e13`, inline accent `#7478f8`). Theme off →
 Home/header/text take the page's Discord variables, inline accent removed, `--brand-500` drives the accent

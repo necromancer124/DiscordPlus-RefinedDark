@@ -11,7 +11,7 @@
  */
 import { openUserProfile } from "@utils/discord";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
-import { ApplicationStreamingStore, ChannelStore, NavigationRouter, SettingsRouter, showToast } from "@webpack/common";
+import { Alerts, ApplicationStreamingStore, ChannelStore, NavigationRouter, SettingsRouter, showToast } from "@webpack/common";
 
 import { cls, PIP_SELECTOR } from "./layout";
 
@@ -72,7 +72,7 @@ export function openDm(userId: string) {
 // removeRelationship(userId, context) is positional (Vencord's RelationshipNotifier patches it);
 // addRelationship takes an options object in current Discord.
 const RelationshipActions: {
-    addRelationship(options: { userId: string; context?: unknown; }): Promise<unknown> | void;
+    addRelationship(options: { userId: string; context?: unknown; type?: number; }): Promise<unknown> | void;
     removeRelationship(userId: string, context?: unknown): Promise<unknown> | void;
 } = findByPropsLazy("addRelationship", "removeRelationship");
 const FRIENDS_CONTEXT = { location: "Friends" };
@@ -93,6 +93,29 @@ export const acceptFriendRequest = (userId: string) =>
 /** Ignore an incoming request, or cancel one you sent. */
 export const removeFriendRequest = (userId: string) =>
     relationshipAction("remove the friend request", userId, () => RelationshipActions.removeRelationship(userId, FRIENDS_CONTEXT));
+
+/** Ask first with Discord's own alert dialog (plain confirm() if that isn't available). */
+function confirmThen(title: string, body: string, confirmText: string, run: () => void) {
+    try {
+        Alerts.show({ title, body, confirmText, cancelText: "Cancel", onConfirm: run });
+    } catch (e) {
+        log("confirm dialog", e);
+        if (window.confirm(`${title}\n\n${body}`)) run();
+    }
+}
+
+const BLOCKED = 2; // RelationshipType.BLOCKED
+
+export const removeFriend = (userId: string, name: string) =>
+    confirmThen(`Remove '${name}'`, `Are you sure you want to remove ${name} from your friends?`, "Remove Friend",
+        () => relationshipAction("remove the friend", userId, () => RelationshipActions.removeRelationship(userId, FRIENDS_CONTEXT)));
+
+export const blockUser = (userId: string, name: string) =>
+    confirmThen(`Block '${name}'`, `${name} won't be able to message you, and they're removed from your friends.`, "Block",
+        () => relationshipAction("block the user", userId, () => RelationshipActions.addRelationship({ userId, context: FRIENDS_CONTEXT, type: BLOCKED })));
+
+export const unblockUser = (userId: string) =>
+    relationshipAction("unblock the user", userId, () => RelationshipActions.removeRelationship(userId, FRIENDS_CONTEXT));
 
 // Streaming: watching uses Discord's stream action creator when present; navigation always follows.
 const StreamActions: {
