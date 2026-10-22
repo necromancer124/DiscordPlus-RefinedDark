@@ -40,6 +40,10 @@
 
 .PARAMETER Yes
     Don't ask the optional questions; answer every one with its default (yes).
+
+.PARAMETER KeepChoices
+    Updating: don't ask again; give every question the answer from the last install (taskbar, desktop,
+    Start menu, login check), close Discord without asking and start it again at the end.
 #>
 [CmdletBinding()]
 param(
@@ -49,7 +53,8 @@ param(
     [switch]$SkipInject,
     [switch]$NoStart,
     [switch]$NoLauncher,
-    [switch]$Yes
+    [switch]$Yes,
+    [switch]$KeepChoices
 )
 
 $ErrorActionPreference = "Stop"
@@ -192,6 +197,7 @@ function Stop-DiscordNow {
 
 function Close-Discord([string]$why) {
     if (-not (Get-DiscordProcesses)) { return }
+    if ($KeepChoices -or $Yes) { Write-Note "$why Closing it."; Stop-DiscordNow; return }
     $answer = Read-Host "    $why Close it now? [Y/n]"
     if ($answer -match "^(n|no)$") { Fail "Discord is still running. Close it and run INSTALL.bat again." }
     Stop-DiscordNow
@@ -248,8 +254,23 @@ if ($injected -and -not $SkipInject) {
 # -- 7. Discord+ launcher, shortcuts, taskbar (each one asked) ------------------------
 # Each Discord update installs a new app-* folder without Vencord's patch. Vencord re-patches updates that
 # happen while it runs; the launcher also covers updates applied while Discord starts.
-function Ask([string]$question) {
-    if ($Yes) { Write-Note "$question yes"; return $true }
+# What the last install chose (for -KeepChoices). Unknown questions default to yes.
+$previous = @{}
+if ($state) {
+    $prevLinks = @($state.launcherShortcuts | Where-Object { $_ })
+    $previous.taskbar = [bool]$state.pinPath
+    $previous.desktop = [bool]($prevLinks | Where-Object { $_ -like "$([Environment]::GetFolderPath('Desktop'))\*" })
+    $previous.startMenu = [bool]($prevLinks | Where-Object { $_ -like "$([Environment]::GetFolderPath('Programs'))\*" })
+    $previous.login = [bool](@($state.launcherRunValues | Where-Object { $_ }).Count)
+}
+
+function Ask([string]$question, [string]$key = "") {
+    if ($KeepChoices -and $key -and $previous.ContainsKey($key)) {
+        $a = [bool]$previous[$key]
+        Write-Note "$question $(if ($a) { 'yes' } else { 'no' }) (as last time)"
+        return $a
+    }
+    if ($Yes -or $KeepChoices) { Write-Note "$question yes"; return $true }
     $answer = Read-Host "    $question [Y/n]"
     return -not ($answer -match "^(n|no)$")
 }
@@ -299,6 +320,23 @@ if ($injected -and -not $SkipInject -and -not $NoLauncher) {
         $pinTarget = (New-Object -ComObject WScript.Shell).CreateShortcut($pin.FullName).TargetPath
         $primary = $installs | Where-Object { $pinTarget -like "$($_.Root)\*" } | Select-Object -First 1
     }
+    # Re-install: the pin Discord+ rewrote last time points at the launcher, not at Discord. Keep tracking it
+    # (and its backup of Discord's original pin), otherwise UNINSTALL.bat could no longer restore it.
+    # Found by the pin itself (its arguments run DiscordPlus.vbs), so it works even if the state file lost it.
+    $ourPin = $false
+    $ourPinBackup = $null
+    if (-not $pin) {
+        $pin = Get-ChildItem -Path $PinDir -Filter "*.lnk" -ErrorAction SilentlyContinue | Where-Object {
+            (New-Object -ComObject WScript.Shell).CreateShortcut($_.FullName).Arguments -like "*DiscordPlus.vbs*"
+        } | Select-Object -First 1
+        if ($pin) {
+            $ourPin = $true
+            $previous.taskbar = $true # it's on the taskbar now; -KeepChoices keeps it there
+            $ourPinBackup = if ($state -and $state.pinBackup) { $state.pinBackup } else { Join-Path $StateDir ("taskbar-" + $pin.Name + ".original") }
+            $pinRoot = [regex]::Match((New-Object -ComObject WScript.Shell).CreateShortcut($pin.FullName).Arguments, '-Root "([^"]+)"').Groups[1].Value
+            if ($pinRoot) { $primary = $installs | Where-Object { $_.Root -eq $pinRoot } | Select-Object -First 1 }
+        }
+    }
     if (-not $primary) { $primary = $installs | Where-Object { $script:ClosedRoots -contains $_.Root -and $_.Patched } | Select-Object -First 1 }
     if (-not $primary) { $primary = $installs | Where-Object { $_.Patched } | Select-Object -First 1 }
 
@@ -317,27 +355,34 @@ if ($injected -and -not $SkipInject -and -not $NoLauncher) {
         Write-Note "Using $($primary.Root)"
 
         if ($pin) {
-            if (Ask "Replace Discord on your taskbar with Discord+?") {
+            $question = if ($ourPin) { "Keep Discord+ on your taskbar?" } else { "Replace Discord on your taskbar with Discord+?" }
+            if (Ask $question "taskbar") {
                 $pinPath = $pin.FullName
-                $pinBackup = Join-Path $StateDir ("taskbar-" + $pin.Name + ".original")
-                if (-not (Test-Path $pinBackup)) { Copy-Item -Path $pinPath -Destination $pinBackup -Force }
+                $pinBackup = if ($ourPin) { $ourPinBackup } else { Join-Path $StateDir ("taskbar-" + $pin.Name + ".original") }
+                # Never back up a pin that already opens Discord+: the backup must stay Discord's own pin.
+                if (-not $ourPin -and -not (Test-Path $pinBackup)) { Copy-Item -Path $pinPath -Destination $pinBackup -Force }
+                if (-not (Test-Path $pinBackup)) { $pinBackup = $null }
                 # Same file, same place on the taskbar; it now opens Discord through Discord+.
                 [DiscordPlus.Shortcut]::Write($pinPath, $wscript, $launchArgs, $StateDir, $icon, $desc, $appId)
                 Write-Ok "Taskbar: Discord now opens with Discord+"
+            } elseif ($ourPin -and $ourPinBackup -and (Test-Path $ourPinBackup)) {
+                Copy-Item -Path $ourPinBackup -Destination $pin.FullName -Force
+                Remove-Item -Path $ourPinBackup -Force
+                Write-Ok "Taskbar: Discord's own pin is back"
             }
         } else {
             Write-Note "Discord isn't pinned to your taskbar. Windows doesn't let installers pin apps:"
             Write-Note "right-click Discord+ in the Start menu and choose Pin to taskbar."
         }
 
-        if (Ask "Add a Discord+ shortcut to the desktop?") {
+        if (Ask "Add a Discord+ shortcut to the desktop?" "desktop") {
             $lnk = Join-Path ([Environment]::GetFolderPath("Desktop")) "$label.lnk"
             [DiscordPlus.Shortcut]::Write($lnk, $wscript, $launchArgs, $StateDir, $icon, $desc, $appId)
             $launcherShortcuts += $lnk
             Write-Ok "Desktop: $label"
         }
 
-        if (Ask "Add Discord+ to the Start menu?") {
+        if (Ask "Add Discord+ to the Start menu?" "startMenu") {
             $menuDir = Join-Path ([Environment]::GetFolderPath("Programs")) "Discord+"
             New-Item -ItemType Directory -Force -Path $menuDir | Out-Null
             $lnk = Join-Path $menuDir "$label.lnk"
@@ -346,7 +391,7 @@ if ($injected -and -not $SkipInject -and -not $NoLauncher) {
             Write-Ok "Start menu: $label"
         }
 
-        if (Ask "Check Discord at Windows login, so Discord+ survives updates?") {
+        if (Ask "Check Discord at Windows login, so Discord+ survives updates?" "login") {
             $valueName = "DiscordPlus-$flavor"
             $command = "`"$wscript`" `"$vbs`" -Flavor $flavor -Root `"$($primary.Root)`" -Mode check"
             New-Item -Path $RunKey -Force | Out-Null
@@ -357,6 +402,11 @@ if ($injected -and -not $SkipInject -and -not $NoLauncher) {
     }
 }
 
+# Installs an earlier run patched stay recorded.
+if ($state -and $state.launcherPatchedRoots) {
+    $launcherPatchedRoots = @(@($state.launcherPatchedRoots) + $launcherPatchedRoots | Where-Object { $_ } | Select-Object -Unique)
+}
+
 # -- 8. Remember what we did ----------------------------------------------------
 New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
 [ordered]@{
@@ -364,7 +414,7 @@ New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
     clonedByInstaller = $clonedByUs
     injected          = $injected
     pluginPath        = $pluginTarget
-    pluginVersion     = "1.12.0"
+    pluginVersion     = "1.13.0"
     launcherShortcuts = $launcherShortcuts
     launcherRunValues = $launcherRunValues
     launcherPatchedRoots = $launcherPatchedRoots

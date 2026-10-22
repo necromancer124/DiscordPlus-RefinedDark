@@ -85,8 +85,8 @@ function openFriendMenu(e: React.MouseEvent, row: FriendRow) {
             {row.kind === "ignored" && <Menu.MenuItem id="dp-block" label="Block" color="danger" action={() => blockUser(row.id, row.name)} />}
             {row.kind === "blocked" && <Menu.MenuItem id="dp-unblock" label="Unblock" action={() => unblockUser(row.id)} />}
             {row.kind !== "blocked" && (row.ignored
-                ? <Menu.MenuItem id="dp-unignore" label="Unignore" action={() => unignoreUser(row.id)} />
-                : <Menu.MenuItem id="dp-ignore" label="Ignore" action={() => ignoreUser(row.id)} />)}
+                ? <Menu.MenuItem id="dp-unignore" label="Unignore" action={() => unignoreUser(row.id, row.name)} />
+                : <Menu.MenuItem id="dp-ignore" label="Ignore" action={() => ignoreUser(row.id, row.name)} />)}
         </Menu.Menu>
     ));
 }

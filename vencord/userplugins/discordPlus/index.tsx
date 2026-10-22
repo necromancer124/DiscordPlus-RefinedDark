@@ -1,5 +1,5 @@
 /*
- * Discord+ Refined Dark — Vencord userplugin, v1.12
+ * Discord+ Refined Dark — Vencord userplugin, v1.13
  * SPDX-License-Identifier: CC-BY-NC-4.0
  *
  * "Just Discord, but substantially better." See MASTER_PROMPT.md / DESIGN.md in the project root.
@@ -64,7 +64,7 @@ export default definePlugin({
 
     start() {
         startRoot();
-        console.log("[Discord+] v1.12.0 started");
+        console.log("[Discord+] v1.13.0 started");
     },
 
     stop() {

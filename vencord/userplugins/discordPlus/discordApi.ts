@@ -74,8 +74,8 @@ export function openDm(userId: string) {
 const RelationshipActions: {
     addRelationship(options: { userId: string; context?: unknown; type?: number; }): Promise<unknown> | void;
     removeRelationship(userId: string, context?: unknown): Promise<unknown> | void;
-    ignoreUser?(userId: string, location?: unknown): Promise<unknown> | void;
-    unignoreUser?(userId: string, location?: unknown): Promise<unknown> | void;
+    ignoreUser?(userId: string, location?: unknown, name?: string): Promise<unknown> | void;
+    unignoreUser?(userId: string, location?: unknown, name?: string): Promise<unknown> | void;
 } = findByPropsLazy("addRelationship", "removeRelationship");
 const FRIENDS_CONTEXT = { location: "Friends" };
 
@@ -134,16 +134,19 @@ export function openNativeAddFriend() {
     setTimeout(attempt, 50);
 }
 
-// Discord's "Ignore" (2025) lives next to add/removeRelationship. If this Discord version doesn't have it, the
-// failure path opens their profile, where Discord's own Ignore option is.
-const ignoreCall = (name: "ignoreUser" | "unignoreUser", userId: string) => () => {
-    const fn = RelationshipActions[name];
-    if (typeof fn !== "function") throw new Error(`${name} not found`);
-    return fn.call(RelationshipActions, userId, "Friends");
+// Discord's "Ignore" (2025) lives next to add/removeRelationship: ignoreUser(userId, location, name), where the
+// name goes into Discord's own "ignored" toast. If this Discord version doesn't have it, the failure path opens
+// their profile, where Discord's own Ignore option is.
+const ignoreCall = (fnName: "ignoreUser" | "unignoreUser", userId: string, name: string) => () => {
+    const fn = RelationshipActions[fnName];
+    if (typeof fn !== "function") throw new Error(`${fnName} not found`);
+    return fn.call(RelationshipActions, userId, "Friends", name);
 };
 
-export const ignoreUser = (userId: string) => relationshipAction("ignore the user", userId, ignoreCall("ignoreUser", userId));
-export const unignoreUser = (userId: string) => relationshipAction("unignore the user", userId, ignoreCall("unignoreUser", userId));
+export const ignoreUser = (userId: string, name: string) =>
+    relationshipAction("ignore the user", userId, ignoreCall("ignoreUser", userId, name));
+export const unignoreUser = (userId: string, name: string) =>
+    relationshipAction("unignore the user", userId, ignoreCall("unignoreUser", userId, name));
 
 // Streaming: watching uses Discord's stream action creator when present; navigation always follows.
 const StreamActions: {

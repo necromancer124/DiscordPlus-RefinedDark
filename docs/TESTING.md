@@ -1,5 +1,16 @@
 # Testing and verification
 
+## v1.13.0 — in the real client (2026-10-22)
+Installed with `INSTALL.bat -KeepChoices` on the author's PC, Discord started with a local DevTools port for checks
+(screenshots kept private). Right after start: Discord+ running, 15 friends online at once (the offline bug is
+fixed), no errors. `ignoreUser` / `unignoreUser` / `blockUser` exist under those names on the relationship module;
+`RelationshipStore.getIgnoredIDs` exists. A profile plus an alert on top: Discord+ Home stays visible. Card menu:
+Message / View profile / favourite / Remove friend / Block / Ignore. Add Friend: Discord's Add Friend page (username
+input), its toolbar hidden with the Back bar on exactly the same rect, Active Now hidden; Back → Home with the wave
+running (diagonal steps 3,4,5,6 / 4,5,6,7, `dp-enter-wave`), cleared after the run. Messages page animates (230
+rows). Installer: the pin Discord+ had replaced was recognised, its record and Discord's original pin backup
+(`Update.exe --processStart Discord.exe`) restored in the state file.
+
 ## Animations (branch claude/animations, 2026-10-22)
 Harness: filter change → page gets `dp-enter`, cards get diagonal steps (3,4,5 / 4,5,6 …), animation
 `dp-enter-wave`, card 5 delayed 0.19s; class and steps removed after the run. Pop / Slide / Flip / Fade switch the

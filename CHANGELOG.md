@@ -1,12 +1,17 @@
 # Changelog
 
-## Unreleased (branch claude/animations)
+## v1.13.0 — 2026-10-22
 - **Entrance animations:** when Discord+ Home opens (and on filter / sort changes, or when your friends first load)
   the cards appear in a diagonal **wave**. Settings: **Animations** = Wave, Pop, Slide, Flip, Fade or Off, and
   **Animation speed** = Normal, Fast or Relaxed. The Messages list animates the same way.
 - Smaller touches: cards lift slightly on hover, the header slides in when Discord starts, the call window rises
   in, unread badges pop. "Off" turns all of these off; "Reduce motion" and Windows' reduced-motion still turn
   off every Discord+ animation.
+- **Installer, re-installing:** a taskbar pin that Discord+ already replaced is recognised again (before, a second
+  `INSTALL.bat` lost track of it and of the backup of Discord's own pin, so `UNINSTALL.bat` couldn't put Discord's
+  pin back). Running `INSTALL.bat` again repairs this. Installs patched earlier stay recorded.
+- New `INSTALL.bat -KeepChoices`: update without questions, reusing the answers from last time.
+- Ignore / Unignore pass the person's name to Discord, for Discord's own "ignored" message.
 
 ## v1.12.0 — 2026-10-22
 - **Fixed: everyone showed as offline after starting Discord** until the window was reloaded. Discord+ built its
