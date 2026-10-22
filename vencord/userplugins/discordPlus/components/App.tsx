@@ -5,7 +5,7 @@
 import ErrorBoundary from "@components/ErrorBoundary";
 import { useEffect, useState } from "@webpack/common";
 
-import { HEADER_HEIGHT, LayoutInfo, measure, setBodyClass, setDmColumnHidden, setPushed, tidyPanels } from "../layout";
+import { HEADER_HEIGHT, LayoutInfo, markNativeToolbar, measure, setBodyClass, setDmColumnHidden, setPushed, tidyPanels } from "../layout";
 import { go, ROUTES } from "../discordApi";
 import { settings } from "../settings";
 import { CallManager } from "./CallManager";
@@ -20,6 +20,8 @@ const SafeHeader = ErrorBoundary.wrap(Header, { noop: true });
 const SafeHome = ErrorBoundary.wrap(Home, { noop: true });
 const SafeDock = ErrorBoundary.wrap(UserDock, { noop: true });
 const SafeCall = ErrorBoundary.wrap(CallManager, { noop: true });
+// Declared below; a function declaration is hoisted, so wrapping it here is fine.
+const SafeClassicBar = ErrorBoundary.wrap(ClassicBar, { noop: true });
 
 function useLayout(): LayoutInfo {
     const [info, setInfo] = useState<LayoutInfo>(measure);
@@ -40,6 +42,32 @@ function useLayout(): LayoutInfo {
         };
     }, []);
     return info;
+}
+
+/**
+ * Discord's own Friends page (opened by Add Friend or the header's classic button) loses its native toolbar;
+ * this bar takes its exact place with a single way back to Discord+ Home.
+ */
+function ClassicBar({ onBack }: { onBack(): void; }) {
+    const [rect, setRect] = useState<DOMRect | null>(null);
+    useEffect(() => {
+        const update = () => setRect(prev => {
+            const r = markNativeToolbar(true)?.getBoundingClientRect() ?? null;
+            return prev && r && prev.top === r.top && prev.left === r.left && prev.width === r.width && prev.height === r.height ? prev : r;
+        });
+        update();
+        const t = setInterval(update, 300);
+        return () => { clearInterval(t); markNativeToolbar(false); };
+    }, []);
+    if (!rect) return null;
+    return (
+        <div className="dp-classic-bar" style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}>
+            <button type="button" className="dp-classic-back" onClick={onBack}>
+                <Icon name="back" size={18} />
+                Back to Friends
+            </button>
+        </div>
+    );
 }
 
 function QuestChip() {
@@ -144,6 +172,7 @@ export function App() {
             {showHome && (
                 <SafeHome left={layout.left} top={homeTop} page={page} query={query} showClassic={() => setClassic(true)} />
             )}
+            {onHome && classic && <SafeClassicBar onBack={() => setClassic(false)} />}
             {s.floatingDock && <SafeDock onMounted={setDockActive} />}
             {s.callManager && <SafeCall route={layout.route} forceShow={forceShowCall} />}
             {s.showQuestChip && <QuestChip />}

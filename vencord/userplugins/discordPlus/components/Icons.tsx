@@ -26,6 +26,7 @@ const PATHS = {
     star: "M12 4.5 14 9l4.8.4-3.6 3.2 1.1 4.8L12 15l-4.3 2.4 1.1-4.8-3.6-3.2L10 9l2-4.5Z",
     screen: "M4 5h16v11H4zM9 20h6M12 16v4",
     returnCall: "M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11",
+    back: "M19 12H5M11 6l-6 6 6 6",
     classic: "M4 5h16v14H4zM9 5v14",
     plus: "M12 5v14M5 12h14",
     check: "M5 12.5l4.5 4.5L19 7",

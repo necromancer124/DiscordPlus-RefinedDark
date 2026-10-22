@@ -178,6 +178,35 @@ body.dp-home-active .dp-pushed {
     visibility: hidden !important;
 }
 
+/* Discord's own Friends page toolbar (Friends · Online · All · Add Friend): the Discord+ Back bar covers its spot. */
+.dp-native-toolbar {
+    visibility: hidden !important;
+}
+
+.dp-classic-bar {
+    position: fixed;
+    z-index: 998;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    box-sizing: border-box;
+    background: var(--dp-header-bg);
+    border-bottom: 1px solid var(--dp-line);
+}
+
+.dp-classic-back {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 0 12px 0 8px !important;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dp-text) !important;
+}
+.dp-classic-back:hover { background: var(--dp-hover) !important; }
+
 /* Discord's "Active Now" column beside its own Friends / Add Friend page. */
 body.dp-hide-active-now :is([class^="nowPlayingColumn_"], [class*=" nowPlayingColumn_"]) {
     display: none !important;

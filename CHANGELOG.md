@@ -2,7 +2,8 @@
 
 ## v1.12.0 — 2026-10-22
 - **Add Friend** button on the Discord+ Friends page. It opens Discord's own Add Friend page (username search,
-  suggestions, captcha); the header's classic-view button brings you back.
+  suggestions, captcha). Discord's Friends · Online · All · Add Friend toolbar is replaced there by a Discord+
+  **Back to Friends** bar.
 - **Ignore:** friend card menu has Ignore / Unignore (Discord's ignore: no notifications from them, they aren't
   told), and an **Ignored** filter appears when you've ignored someone.
 - The card menu no longer has "Open Discord's Friends page".

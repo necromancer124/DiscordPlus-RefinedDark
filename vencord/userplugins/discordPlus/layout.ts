@@ -27,6 +27,7 @@ export const PIP_SELECTOR = cls("pictureInPictureWindow");
 export const PUSHED_CLASS = "dp-pushed";
 export const DM_COLUMN_CLASS = "dp-dm-column";
 export const PANEL_HIDDEN_CLASS = "dp-panel-hidden";
+export const NATIVE_TOOLBAR_CLASS = "dp-native-toolbar";
 export const HEADER_HEIGHT = 52;
 
 export type RouteKind = "home" | "dm" | "guild" | "other";
@@ -159,10 +160,33 @@ export function tidyPanels(hideUser: boolean, hideQuest: boolean) {
     hide.forEach(el => el.classList.add(PANEL_HIDDEN_CLASS));
 }
 
+/** The "Add Friend" tab of Discord's own Friends page: matched by its class first, then its English label. */
+export function findNativeAddFriendTab(): HTMLElement | undefined {
+    return [...document.querySelectorAll<HTMLElement>('[class*="addFriend"], [role="tab"], [role="button"], button')]
+        .filter(el => !el.closest("#vc-discordplus-root"))
+        .find(el => /addFriend/.test(el.className) || el.textContent?.trim().toLowerCase() === "add friend");
+}
+
+/**
+ * Mark the toolbar of Discord's own Friends page (Friends · Online · All · Add Friend) so CSS can hide it while
+ * Discord+ shows its Back bar in its place. Only a short bar holding the Add Friend tab qualifies.
+ */
+export function markNativeToolbar(on: boolean): HTMLElement | null {
+    let bar: HTMLElement | null = null;
+    if (on) {
+        const tab = findNativeAddFriendTab();
+        const candidate = tab?.closest<HTMLElement>("section") ?? null;
+        if (candidate && candidate.getBoundingClientRect().height < 90) bar = candidate;
+    }
+    document.querySelectorAll(`.${NATIVE_TOOLBAR_CLASS}`).forEach(el => { if (el !== bar) el.classList.remove(NATIVE_TOOLBAR_CLASS); });
+    bar?.classList.add(NATIVE_TOOLBAR_CLASS);
+    return bar;
+}
+
 /** Remove every trace of Discord+ from Discord's DOM. Called on plugin stop. */
 export function cleanupDom() {
-    document.querySelectorAll(`.${PUSHED_CLASS}, .${DM_COLUMN_CLASS}, .${PANEL_HIDDEN_CLASS}`)
-        .forEach(el => el.classList.remove(PUSHED_CLASS, DM_COLUMN_CLASS, PANEL_HIDDEN_CLASS));
+    document.querySelectorAll(`.${PUSHED_CLASS}, .${DM_COLUMN_CLASS}, .${PANEL_HIDDEN_CLASS}, .${NATIVE_TOOLBAR_CLASS}`)
+        .forEach(el => el.classList.remove(PUSHED_CLASS, DM_COLUMN_CLASS, PANEL_HIDDEN_CLASS, NATIVE_TOOLBAR_CLASS));
     [...document.body.classList].filter(c => c.startsWith("dp-")).forEach(c => document.body.classList.remove(c));
     document.body.style.removeProperty("--dp-accent");
     document.body.style.removeProperty("--dp-header-h");

@@ -13,7 +13,7 @@ import { openUserProfile } from "@utils/discord";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
 import { Alerts, ApplicationStreamingStore, ChannelStore, NavigationRouter, SettingsRouter, showToast } from "@webpack/common";
 
-import { cls, PIP_SELECTOR } from "./layout";
+import { cls, findNativeAddFriendTab, PIP_SELECTOR } from "./layout";
 
 const log = (what: string, error: unknown) => console.warn(`[Discord+] ${what} failed`, error);
 
@@ -124,12 +124,9 @@ export const unblockUser = (userId: string) =>
  * press its "Add Friend" tab. Matched by its class first, then by its English label.
  */
 export function openNativeAddFriend() {
-    const find = () => [...document.querySelectorAll<HTMLElement>('[class*="addFriend"], [role="tab"], [role="button"], button')]
-        .filter(el => !el.closest("#vc-discordplus-root"))
-        .find(el => /addFriend/.test(el.className) || el.textContent?.trim().toLowerCase() === "add friend");
     let tries = 0;
     const attempt = () => {
-        const tab = find();
+        const tab = findNativeAddFriendTab();
         if (tab) tab.click();
         else if (++tries < 20) setTimeout(attempt, 100);
         else log("open Add Friend", new Error("Add Friend tab not found"));
