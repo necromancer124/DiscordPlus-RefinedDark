@@ -1,6 +1,8 @@
 # Testing and verification
 
 ## v1.12.0 — Add Friend, Ignore (2026-10-22)
+Late stores: plugin started with PresenceStore unavailable and no presences → 0 online; store appears, presences
+arrive and emit → 11 online without reload. Refresh button: silent data change → shown after pressing it.
 Harness: Ignore on a friend calls `ignoreUser(id, "Friends")`; Ignored filter (2) lists an ignored friend (normal
 card, menu says Unignore) and an ignored non-friend ("Ignored", menu: Message / View profile / Block / Unignore);
 Unignore calls `unignoreUser`. Add Friend button switches to the classic page and clicks the native "Add Friend" tab.

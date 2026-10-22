@@ -11,7 +11,7 @@ import { Avatar, useFloating } from "./common";
 import { Icon } from "./Icons";
 
 export function UserDock({ onMounted }: { onMounted(active: boolean): void; }) {
-    useStoreTick([UserStore, MediaEngineStore, SelfPresenceStore]);
+    useStoreTick(() => [UserStore, MediaEngineStore, SelfPresenceStore]);
     const { snapDock } = settings.use(["snapDock"]);
     const ref = useRef<HTMLDivElement>(null);
     const grip = useRef<HTMLDivElement>(null);

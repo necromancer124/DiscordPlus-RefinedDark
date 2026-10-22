@@ -5,7 +5,7 @@
 import { ContextMenuApi, Menu, PrivateChannelSortStore, useMemo, useState } from "@webpack/common";
 
 import {
-    ConversationRow, FRIEND_STORES, FriendRow, readConversations, readRelationships,
+    ConversationRow, friendStores, FriendRow, readConversations, readRelationships, refreshAll,
     STATUS_LABEL, STATUS_ORDER, useClock, useStoreTick
 } from "../data";
 import {
@@ -179,7 +179,7 @@ function FriendCard({ row }: { row: FriendRow; }) {
 }
 
 function FriendsView({ query, showClassic }: { query: string; showClassic(): void; }) {
-    const tick = useStoreTick(FRIEND_STORES);
+    const tick = useStoreTick(friendStores);
     const { density, favorites, showActivity } = settings.use(["density", "favorites", "showActivity"]);
     const [filter, setFilter] = useState<FriendFilter>((settings.store.defaultFilter as FriendFilter) ?? "all");
     const [sort, setSort] = useState<Sort>("smart");
@@ -216,6 +216,9 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
                 <Icon name="friends" size={22} />
                 <h1>Friends</h1>
                 <span className="dp-muted">{data.friends.length} friends</span>
+                <button type="button" className="dp-icon-btn dp-refresh" title="Refresh" aria-label="Refresh" onClick={refreshAll}>
+                    <Icon name="refresh" size={17} />
+                </button>
                 <button
                     type="button"
                     className="dp-add-friend"
@@ -292,7 +295,7 @@ function ConversationItem({ row }: { row: ConversationRow; }) {
 }
 
 function MessagesView({ query }: { query: string; }) {
-    const tick = useStoreTick([...FRIEND_STORES, PrivateChannelSortStore]);
+    const tick = useStoreTick(() => [...friendStores(), PrivateChannelSortStore]);
     useClock(60_000);
     const rows = useMemo(readConversations, [tick]);
     const q = query.trim().toLowerCase();

@@ -1,6 +1,10 @@
 # Changelog
 
 ## v1.12.0 — 2026-10-22
+- **Fixed: everyone showed as offline after starting Discord** until the window was reloaded. Discord+ built its
+  list of Discord stores while Discord was still loading, so it never heard about statuses arriving later. Stores
+  are now read when needed and subscribed as soon as they exist, and Home re-reads everything once Discord has
+  connected. A **refresh** button next to the friend count does the same by hand.
 - **Add Friend** button on the Discord+ Friends page. It opens Discord's own Add Friend page (username search,
   suggestions, captcha). Discord's Friends · Online · All · Add Friend toolbar is replaced there by a Discord+
   **Back to Friends** bar.

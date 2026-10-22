@@ -131,7 +131,7 @@ function Tile({ p, row, onWatch }: { p: Participant; row?: boolean; onWatch?(): 
  * call's own server unless the user showed it there from the header (`forceShow`).
  */
 export function CallManager({ route, forceShow = false }: { route: string; forceShow?: boolean; }) {
-    useStoreTick([SelectedChannelStore, VoiceStateStore, SpeakingStore, MediaEngineStore, ChannelStore, UserStore, GuildStore, ApplicationStreamingStore, PresenceStore, SelfPresenceStore]);
+    useStoreTick(() => [SelectedChannelStore, VoiceStateStore, SpeakingStore, MediaEngineStore, ChannelStore, UserStore, GuildStore, ApplicationStreamingStore, PresenceStore, SelfPresenceStore]);
     const now = useClock(1000);
     const { callMinimized: savedMinimized, dockStreamVideo, callMembersHidden, callHidden } =
         settings.use(["callMinimized", "dockStreamVideo", "callMembersHidden", "callHidden"]);

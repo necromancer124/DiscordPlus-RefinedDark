@@ -5,7 +5,7 @@
 import { ActivityType, RelationshipType } from "@vencord/discord-types/enums";
 import {
     ChannelStore, MessageStore, PresenceStore, PrivateChannelSortStore, ReadStateStore,
-    RelationshipStore, useEffect, UserStore, useState
+    RelationshipStore, useEffect, UserStore, useRef, useState
 } from "@webpack/common";
 
 import { safe, snowflakeTime } from "./discordApi";
@@ -67,8 +67,13 @@ export interface ConversationRow {
  * Used instead of polling so the UI follows Discord live. A timer (not requestAnimationFrame)
  * so updates still land while Discord is in the background, e.g. during a call.
  */
-export function useStoreTick(stores: any[]) {
+export function useStoreTick(stores: any[] | (() => any[])) {
     const [tick, setTick] = useState(0);
+    // Discord's stores are found while Discord loads; one can still be missing when Discord+ first renders.
+    // Keep the latest list and subscribe to each store as soon as it exists (otherwise e.g. presences that
+    // arrive after startup never re-render Home and everyone looks offline).
+    const latest = useRef(stores);
+    latest.current = stores;
     useEffect(() => {
         let timer: ReturnType<typeof setTimeout> | undefined;
         const bump = () => {
@@ -78,10 +83,25 @@ export function useStoreTick(stores: any[]) {
                 setTick(t => t + 1);
             }, 16);
         };
-        const live = stores.filter(s => s && typeof s.addChangeListener === "function");
-        live.forEach(s => s.addChangeListener(bump));
+        const subscribed = new Set<any>();
+        const ready = (s: any) => { try { return !!s && typeof s.addChangeListener === "function"; } catch { return false; } };
+        const subscribe = (late: boolean) => {
+            const list = typeof latest.current === "function" ? latest.current() : latest.current;
+            let missing = false;
+            for (const s of list ?? []) {
+                if (!ready(s)) { missing = true; continue; }
+                if (subscribed.has(s)) continue;
+                s.addChangeListener(bump);
+                subscribed.add(s);
+                if (late) bump(); // a store that only just appeared may already hold data
+            }
+            return missing;
+        };
+        let retry: ReturnType<typeof setInterval> | undefined;
+        if (subscribe(false)) retry = setInterval(() => { if (!subscribe(true)) clearInterval(retry); }, 500);
         return () => {
-            live.forEach(s => s.removeChangeListener(bump));
+            clearInterval(retry);
+            subscribed.forEach(s => s.removeChangeListener(bump));
             clearTimeout(timer);
         };
     }, []);
@@ -154,7 +174,16 @@ export function clearLiveMessages() {
     liveMessages.clear();
 }
 
-export const FRIEND_STORES = [RelationshipStore, PresenceStore, UserStore, ReadStateStore, ChannelStore, MessageStore, LiveMessageStore];
+/**
+ * Read at call time, never captured at load: Vencord fills these store bindings in while Discord starts, so an
+ * array built when this file loads could hold `undefined` forever.
+ */
+export const friendStores = () => [RelationshipStore, PresenceStore, UserStore, ReadStateStore, ChannelStore, MessageStore, LiveMessageStore];
+
+/** Make every Discord+ list re-read Discord's stores (refresh button, and once Discord finishes connecting). */
+export function refreshAll() {
+    liveListeners.forEach(cb => cb());
+}
 
 export function statusOf(userId: string): Status {
     const s = safe(() => PresenceStore.getStatus(userId), "offline" as string);

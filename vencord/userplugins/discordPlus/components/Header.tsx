@@ -44,7 +44,7 @@ const NAV: NavItem[] = [
  * manager, and a button that returns to the call.
  */
 function CallPill({ route, forceShow, setForceShow }: { route: string; forceShow: boolean; setForceShow(v: boolean): void; }) {
-    useStoreTick([SelectedChannelStore, ChannelStore, UserStore]);
+    useStoreTick(() => [SelectedChannelStore, ChannelStore, UserStore]);
     const { callHidden } = settings.use(["callHidden"]);
     const now = useClock(1000);
     const channelId = safe(() => SelectedChannelStore.getVoiceChannelId() ?? null, null);
@@ -107,7 +107,7 @@ export interface HeaderProps {
 
 /** Your avatar, mute, deafen and settings: Discord's user panel, moved up into the header. */
 function HeaderUser() {
-    useStoreTick([UserStore, MediaEngineStore, SelfPresenceStore]);
+    useStoreTick(() => [UserStore, MediaEngineStore, SelfPresenceStore]);
     const me = safe(() => UserStore.getCurrentUser(), undefined);
     if (!me) return null;
     const muted = safe(() => MediaEngineStore.isSelfMute(), false);
@@ -147,7 +147,7 @@ function useQuestAvailable() {
 }
 
 export function Header({ layout, page, setPage, query, setQuery, classic, setClassic, forceShowCall, setForceShowCall }: HeaderProps) {
-    useStoreTick([ReadStateStore, PrivateChannelSortStore, SelectedChannelStore]);
+    useStoreTick(() => [ReadStateStore, PrivateChannelSortStore, SelectedChannelStore]);
     const inCall = !!safe(() => SelectedChannelStore.getVoiceChannelId(), undefined);
     const { headerUserControls, hideQuestPromo } = settings.use(["headerUserControls", "hideQuestPromo"]);
     const questDot = useQuestAvailable() && hideQuestPromo;

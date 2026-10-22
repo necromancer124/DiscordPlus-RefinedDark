@@ -18,7 +18,7 @@ import { createRoot } from "@webpack/common";
 import type { Root } from "react-dom/client";
 
 import { App } from "./components/App";
-import { clearLiveMessages, recordLiveMessage } from "./data";
+import { clearLiveMessages, recordLiveMessage, refreshAll } from "./data";
 import { cleanupDom } from "./layout";
 import { go, ROUTES } from "./discordApi";
 import { settings } from "./settings";
@@ -46,7 +46,10 @@ export default definePlugin({
     flux: {
         MESSAGE_CREATE({ message, optimistic }: { message: any; optimistic?: boolean; }) {
             if (!optimistic) recordLiveMessage(message);
-        }
+        },
+        // Discord finished (re)connecting or replaced all presences: re-read friends and statuses.
+        CONNECTION_OPEN: () => setTimeout(refreshAll, 500),
+        PRESENCES_REPLACE: () => setTimeout(refreshAll, 100)
     },
 
     toolboxActions: {
