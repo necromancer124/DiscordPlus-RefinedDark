@@ -41,6 +41,11 @@ export const settings = definePluginSettings({
         description: "Replace Discord's quest promo card with a small dot on the Quests tab",
         default: true
     },
+    hideActiveNow: {
+        type: OptionType.BOOLEAN,
+        description: "Hide the \"Active Now\" column on Discord's own Friends / Add Friend page",
+        default: true
+    },
     dockStreamVideo: {
         type: OptionType.BOOLEAN,
         description: "Show Discord's live stream window inside the call manager instead of floating separately",

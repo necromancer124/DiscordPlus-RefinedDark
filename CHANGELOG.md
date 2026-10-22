@@ -6,6 +6,7 @@
 - **Ignore:** friend card menu has Ignore / Unignore (Discord's ignore: no notifications from them, they aren't
   told), and an **Ignored** filter appears when you've ignored someone.
 - The card menu no longer has "Open Discord's Friends page".
+- Discord's **Active Now** column is hidden on its own Friends / Add Friend page (setting: "Hide Active Now").
 
 ## v1.11.0 — 2026-10-22
 - **Popups no longer hide Discord+.** Two stacked Discord popups (a profile and its "Remove friend"

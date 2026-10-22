@@ -6,6 +6,7 @@ card, menu says Unignore) and an ignored non-friend ("Ignored", menu: Message / 
 Unignore calls `unignoreUser`. Add Friend button switches to the classic page and clicks the native "Add Friend" tab.
 **Unverified in the real client:** the names `ignoreUser` / `unignoreUser` (if missing, a toast appears and their
 profile opens, where Discord's own Ignore is) and the native Add Friend tab selector.
+`nowPlayingColumn_` hidden on Home and in classic view; shown again with the setting off and after plugin stop.
 
 ## v1.11.0 — card menu, stacked popups (2026-10-22)
 Harness: two modal layers in a `layerContainer_` → Discord+ Home stays visible; a second `layer_` in `layers_`

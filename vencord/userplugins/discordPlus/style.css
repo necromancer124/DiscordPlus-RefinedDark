@@ -178,6 +178,11 @@ body.dp-home-active .dp-pushed {
     visibility: hidden !important;
 }
 
+/* Discord's "Active Now" column beside its own Friends / Add Friend page. */
+body.dp-hide-active-now :is([class^="nowPlayingColumn_"], [class*=" nowPlayingColumn_"]) {
+    display: none !important;
+}
+
 /* Whole sections of the bottom-left panel removed by tidyPanels() (quest card, user row). */
 .dp-panel-hidden {
     display: none !important;

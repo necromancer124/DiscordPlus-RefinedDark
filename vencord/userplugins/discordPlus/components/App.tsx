@@ -59,7 +59,7 @@ function QuestChip() {
 export function App() {
     const s = settings.use([
         "homeOverlay", "globalHeader", "fullWidthDms", "floatingDock", "callManager", "hideNativeUserPanel",
-        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo"
+        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow"
     ]);
     const layout = useLayout();
     const [page, setPage] = useState<HomePage>("friends");
@@ -115,11 +115,12 @@ export function App() {
         setBodyClass("dp-hide-native-panel", (s.hideNativeUserPanel && dockActive && s.callManager) || hideMePanel);
         setBodyClass("dp-hide-dm-column", hideDmColumn);
         setBodyClass("dp-hide-quest-promo", s.hideQuestPromo);
+        setBodyClass("dp-hide-active-now", s.hideActiveNow);
         setBodyClass("dp-header-active", showHeader);
-    }, [s.accent, s.applyTheme, s.reduceMotion, showHome, s.fullWidthDms, s.hideNativeUserPanel, s.callManager, dockActive, layout.kind, hideDmColumn, hideMePanel, s.hideQuestPromo, showHeader]);
+    }, [s.accent, s.applyTheme, s.reduceMotion, showHome, s.fullWidthDms, s.hideNativeUserPanel, s.callManager, dockActive, layout.kind, hideDmColumn, hideMePanel, s.hideQuestPromo, s.hideActiveNow, showHeader]);
 
     useEffect(() => () => {
-        for (const c of ["dp-theme", "dp-reduce-motion", "dp-home-active", "dp-hide-dm-sidebar", "dp-hide-native-panel", "dp-hide-dm-column", "dp-hide-quest-promo", "dp-header-active"])
+        for (const c of ["dp-theme", "dp-reduce-motion", "dp-home-active", "dp-hide-dm-sidebar", "dp-hide-native-panel", "dp-hide-dm-column", "dp-hide-quest-promo", "dp-hide-active-now", "dp-header-active"])
             setBodyClass(c, false);
     }, []);
 
