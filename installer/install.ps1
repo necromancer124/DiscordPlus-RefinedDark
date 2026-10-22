@@ -364,7 +364,7 @@ New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
     clonedByInstaller = $clonedByUs
     injected          = $injected
     pluginPath        = $pluginTarget
-    pluginVersion     = "1.11.0"
+    pluginVersion     = "1.12.0"
     launcherShortcuts = $launcherShortcuts
     launcherRunValues = $launcherRunValues
     launcherPatchedRoots = $launcherPatchedRoots

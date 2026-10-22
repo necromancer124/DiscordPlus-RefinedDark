@@ -9,7 +9,8 @@ import {
     STATUS_LABEL, STATUS_ORDER, useClock, useStoreTick
 } from "../data";
 import {
-    acceptFriendRequest, blockUser, openChannel, openDm, openProfile, relativeTime, removeFriend, removeFriendRequest, unblockUser
+    acceptFriendRequest, blockUser, ignoreUser, openChannel, openNativeAddFriend, openDm, openProfile, relativeTime, removeFriend, removeFriendRequest,
+    unblockUser, unignoreUser
 } from "../discordApi";
 import { FriendFilter, settings, toggleFavorite } from "../settings";
 import { Avatar } from "./common";
@@ -25,7 +26,8 @@ const FILTERS: { id: FriendFilter; label: string; }[] = [
     { id: "unread", label: "Unread" },
     { id: "favorites", label: "Favorites" },
     { id: "pending", label: "Pending" },
-    { id: "blocked", label: "Blocked" }
+    { id: "blocked", label: "Blocked" },
+    { id: "ignored", label: "Ignored" }
 ];
 
 const WEEK = 7 * 86400_000;
@@ -52,7 +54,7 @@ function sortRows(rows: FriendRow[], sort: Sort) {
     });
 }
 
-function openFriendMenu(e: React.MouseEvent, row: FriendRow, showClassic: () => void) {
+function openFriendMenu(e: React.MouseEvent, row: FriendRow) {
     e.preventDefault();
     e.stopPropagation();
     ContextMenuApi.openContextMenu(e, () => (
@@ -80,17 +82,21 @@ function openFriendMenu(e: React.MouseEvent, row: FriendRow, showClassic: () => 
                 <Menu.MenuItem id="dp-cancel" label="Cancel request" action={() => removeFriendRequest(row.id)} />
                 <Menu.MenuItem id="dp-block" label="Block" color="danger" action={() => blockUser(row.id, row.name)} />
             </>}
+            {row.kind === "ignored" && <Menu.MenuItem id="dp-block" label="Block" color="danger" action={() => blockUser(row.id, row.name)} />}
             {row.kind === "blocked" && <Menu.MenuItem id="dp-unblock" label="Unblock" action={() => unblockUser(row.id)} />}
-            <Menu.MenuItem id="dp-classic" label="Open Discord's Friends page" action={showClassic} />
+            {row.kind !== "blocked" && (row.ignored
+                ? <Menu.MenuItem id="dp-unignore" label="Unignore" action={() => unignoreUser(row.id)} />
+                : <Menu.MenuItem id="dp-ignore" label="Ignore" action={() => ignoreUser(row.id)} />)}
         </Menu.Menu>
     ));
 }
 
-function FriendCard({ row, showClassic }: { row: FriendRow; showClassic(): void; }) {
+function FriendCard({ row }: { row: FriendRow; }) {
     const { messagePreviews } = settings.use(["messagePreviews"]);
     const subtitle = row.kind === "incoming" ? "Incoming friend request"
         : row.kind === "outgoing" ? "Outgoing friend request"
             : row.kind === "blocked" ? "Blocked"
+                : row.kind === "ignored" ? "Ignored"
                 : row.activity || STATUS_LABEL[row.status];
     // The card opens the profile; the chat button underneath opens the conversation.
     const activate = () => openProfile(row.id);
@@ -107,7 +113,7 @@ function FriendCard({ row, showClassic }: { row: FriendRow; showClassic(): void;
             title={`View ${row.name}'s profile`}
             onClick={activate}
             onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); } }}
-            onContextMenu={e => openFriendMenu(e, row, showClassic)}
+            onContextMenu={e => openFriendMenu(e, row)}
         >
             {/* Re-keyed per message so the flash replays for every new one. */}
             {row.liveAt > 0 && Date.now() - row.liveAt < 10_000 && <span key={row.liveAt} className="dp-card-flash" aria-hidden="true" />}
@@ -124,7 +130,7 @@ function FriendCard({ row, showClassic }: { row: FriendRow; showClassic(): void;
                     type="button"
                     className="dp-card-menu"
                     aria-label={`More options for ${row.name}`}
-                    onClick={e => openFriendMenu(e, row, showClassic)}
+                    onClick={e => openFriendMenu(e, row)}
                 >
                     <Icon name="more" size={16} />
                 </button>
@@ -191,6 +197,7 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
             case "favorites": return data.friends.filter(r => r.favorite);
             case "pending": return data.pending;
             case "blocked": return data.blocked;
+            case "ignored": return data.ignored;
             default: return data.friends;
         }
     };
@@ -209,12 +216,21 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
                 <Icon name="friends" size={22} />
                 <h1>Friends</h1>
                 <span className="dp-muted">{data.friends.length} friends</span>
+                <button
+                    type="button"
+                    className="dp-add-friend"
+                    title="Add a friend by username (Discord's own Add Friend page)"
+                    onClick={() => { showClassic(); openNativeAddFriend(); }}
+                >
+                    <Icon name="plus" size={16} />
+                    Add Friend
+                </button>
             </div>
             <div className="dp-toolbar">
                 <div className="dp-filters" role="group" aria-label="Filter friends">
                     {FILTERS.map(f => {
                         const count = pick(f.id).length;
-                        if ((f.id === "pending" || f.id === "blocked") && !count && filter !== f.id) return null;
+                        if ((f.id === "pending" || f.id === "blocked" || f.id === "ignored") && !count && filter !== f.id) return null;
                         return (
                             <button
                                 key={f.id}
@@ -239,7 +255,7 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
 
             {data.error && <p className="dp-empty">{data.error}</p>}
             {!data.error && !rows.length && (
-                <p className="dp-empty">{q ? `No one matches “${query}”.` : filter === "pending" ? "No pending friend requests." : filter === "blocked" ? "You haven't blocked anyone." : "No friends here yet."}</p>
+                <p className="dp-empty">{q ? `No one matches “${query}”.` : filter === "pending" ? "No pending friend requests." : filter === "blocked" ? "You haven't blocked anyone." : filter === "ignored" ? "You haven't ignored anyone." : "No friends here yet."}</p>
             )}
 
             <div className={"dp-sections" + (density === "compact" ? " dp-compact" : "")}>
@@ -247,7 +263,7 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
                     <section key={s.title} aria-label={s.title}>
                         <h2 className="dp-section-title">{s.title} — {s.rows.length}</h2>
                         <div className="dp-grid">
-                            {s.rows.map(r => <FriendCard key={r.id} row={r} showClassic={showClassic} />)}
+                            {s.rows.map(r => <FriendCard key={r.id} row={r} />)}
                         </div>
                     </section>
                 ))}

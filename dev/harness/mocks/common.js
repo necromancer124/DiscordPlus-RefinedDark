@@ -62,7 +62,8 @@ delete dms.moss; // a friend without an existing DM
 export const UserStore = Object.assign(new Store(), { getUser: id => users[id], getCurrentUser: () => users.me });
 export const RelationshipStore = Object.assign(new Store(), {
     getFriendIDs: () => people.map(p => p[0]), getNickname: () => undefined, isFriend: id => !!statuses[id],
-    getMutableRelationships: () => new Map([["req1", 3], ["req2", 4]]), getBlockedIDs: () => []
+    getMutableRelationships: () => new Map([["req1", 3], ["req2", 4]]), getBlockedIDs: () => [],
+    ignored: new Set(["moss", "stranger"]), getIgnoredIDs() { return [...this.ignored]; }, isIgnored(id) { return this.ignored.has(id); }
 });
 export const PresenceStore = Object.assign(new Store(), { getStatus: id => statuses[id] ?? "offline", getActivities: id => acts[id] ?? [], isMobileOnline: id => id === "juniper" });
 export const ChannelStore = Object.assign(new Store(), { getDMFromUserId: id => dms[id], getChannel: id => channels[id] });

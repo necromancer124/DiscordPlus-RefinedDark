@@ -12,7 +12,7 @@ export interface Placement {
     h?: number;
 }
 
-export type FriendFilter = "all" | "online" | "recent" | "unread" | "favorites" | "pending" | "blocked";
+export type FriendFilter = "all" | "online" | "recent" | "unread" | "favorites" | "pending" | "blocked" | "ignored";
 
 export const settings = definePluginSettings({
     // ── Layout ──────────────────────────────────────────────────────────

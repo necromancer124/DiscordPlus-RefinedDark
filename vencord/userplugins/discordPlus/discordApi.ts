@@ -74,6 +74,8 @@ export function openDm(userId: string) {
 const RelationshipActions: {
     addRelationship(options: { userId: string; context?: unknown; type?: number; }): Promise<unknown> | void;
     removeRelationship(userId: string, context?: unknown): Promise<unknown> | void;
+    ignoreUser?(userId: string, location?: unknown): Promise<unknown> | void;
+    unignoreUser?(userId: string, location?: unknown): Promise<unknown> | void;
 } = findByPropsLazy("addRelationship", "removeRelationship");
 const FRIENDS_CONTEXT = { location: "Friends" };
 
@@ -116,6 +118,35 @@ export const blockUser = (userId: string, name: string) =>
 
 export const unblockUser = (userId: string) =>
     relationshipAction("unblock the user", userId, () => RelationshipActions.removeRelationship(userId, FRIENDS_CONTEXT));
+
+/**
+ * Discord's own Add Friend page (username search, suggestions, captcha): once the native Friends page shows,
+ * press its "Add Friend" tab. Matched by its class first, then by its English label.
+ */
+export function openNativeAddFriend() {
+    const find = () => [...document.querySelectorAll<HTMLElement>('[class*="addFriend"], [role="tab"], [role="button"], button')]
+        .filter(el => !el.closest("#vc-discordplus-root"))
+        .find(el => /addFriend/.test(el.className) || el.textContent?.trim().toLowerCase() === "add friend");
+    let tries = 0;
+    const attempt = () => {
+        const tab = find();
+        if (tab) tab.click();
+        else if (++tries < 20) setTimeout(attempt, 100);
+        else log("open Add Friend", new Error("Add Friend tab not found"));
+    };
+    setTimeout(attempt, 50);
+}
+
+// Discord's "Ignore" (2025) lives next to add/removeRelationship. If this Discord version doesn't have it, the
+// failure path opens their profile, where Discord's own Ignore option is.
+const ignoreCall = (name: "ignoreUser" | "unignoreUser", userId: string) => () => {
+    const fn = RelationshipActions[name];
+    if (typeof fn !== "function") throw new Error(`${name} not found`);
+    return fn.call(RelationshipActions, userId, "Friends");
+};
+
+export const ignoreUser = (userId: string) => relationshipAction("ignore the user", userId, ignoreCall("ignoreUser", userId));
+export const unignoreUser = (userId: string) => relationshipAction("unignore the user", userId, ignoreCall("unignoreUser", userId));
 
 // Streaming: watching uses Discord's stream action creator when present; navigation always follows.
 const StreamActions: {

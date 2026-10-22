@@ -13,7 +13,8 @@ import { isFavorite } from "./settings";
 
 /** Presence as shown by Discord+: Discord's four statuses plus "streaming" and "online on mobile". */
 export type Status = "online" | "streaming" | "mobile" | "idle" | "dnd" | "offline";
-export type RelationKind = "friend" | "incoming" | "outgoing" | "blocked";
+/** "ignored": someone you ignored who isn't a friend (ignored friends stay "friend" with `ignored` set). */
+export type RelationKind = "friend" | "incoming" | "outgoing" | "blocked" | "ignored";
 
 export const STATUS_LABEL: Record<Status, string> = {
     online: "Online", streaming: "Streaming", mobile: "Online on mobile", idle: "Idle", dnd: "Do Not Disturb", offline: "Offline"
@@ -43,6 +44,8 @@ export interface FriendRow {
     /** When a message arrived live in this DM (0 if none this session); drives the card flash. */
     liveAt: number;
     favorite: boolean;
+    /** Discord's "Ignore": their messages and activity are tucked away, they aren't told. */
+    ignored: boolean;
 }
 
 export interface ConversationRow {
@@ -234,12 +237,13 @@ function friendRow(id: string, kind: RelationKind): FriendRow | null {
         preview: cachedPreview(dmId),
         lastAt: Math.max(snowflakeTime(dm?.lastMessageId), dmId ? liveMessages.get(dmId)?.at ?? 0 : 0),
         liveAt: dmId ? liveMessages.get(dmId)?.at ?? 0 : 0,
-        favorite: isFavorite(id)
+        favorite: isFavorite(id),
+        ignored: safe(() => !!RelationshipStore.isIgnored?.(id), false)
     };
 }
 
-export function readRelationships(): { friends: FriendRow[]; pending: FriendRow[]; blocked: FriendRow[]; error?: string; } {
-    const empty = { friends: [], pending: [], blocked: [] };
+export function readRelationships(): { friends: FriendRow[]; pending: FriendRow[]; blocked: FriendRow[]; ignored: FriendRow[]; error?: string; } {
+    const empty = { friends: [], pending: [], blocked: [], ignored: [] };
     let friendIds: string[];
     try {
         friendIds = RelationshipStore.getFriendIDs();
@@ -261,7 +265,12 @@ export function readRelationships(): { friends: FriendRow[]; pending: FriendRow[
     const blocked = safe(() => RelationshipStore.getBlockedIDs(), [] as string[])
         .map(id => friendRow(id, "blocked")).filter(Boolean) as FriendRow[];
 
-    return { friends, pending, blocked };
+    // Ignored friends reuse their friend card; anyone else you ignored gets an "ignored" row.
+    const byId = new Map([...friends, ...pending].map(r => [r.id, r]));
+    const ignored = safe(() => RelationshipStore.getIgnoredIDs?.() ?? [], [] as string[])
+        .map(id => byId.get(id) ?? friendRow(id, "ignored")).filter(Boolean) as FriendRow[];
+
+    return { friends, pending, blocked, ignored };
 }
 
 export function readConversations(): ConversationRow[] {

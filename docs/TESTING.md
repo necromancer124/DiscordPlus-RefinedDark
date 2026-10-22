@@ -1,5 +1,12 @@
 # Testing and verification
 
+## v1.12.0 — Add Friend, Ignore (2026-10-22)
+Harness: Ignore on a friend calls `ignoreUser(id, "Friends")`; Ignored filter (2) lists an ignored friend (normal
+card, menu says Unignore) and an ignored non-friend ("Ignored", menu: Message / View profile / Block / Unignore);
+Unignore calls `unignoreUser`. Add Friend button switches to the classic page and clicks the native "Add Friend" tab.
+**Unverified in the real client:** the names `ignoreUser` / `unignoreUser` (if missing, a toast appears and their
+profile opens, where Discord's own Ignore is) and the native Add Friend tab selector.
+
 ## v1.11.0 — card menu, stacked popups (2026-10-22)
 Harness: two modal layers in a `layerContainer_` → Discord+ Home stays visible; a second `layer_` in `layers_`
 (User Settings) → Home steps aside; removed → back. Friend menu: Message / View profile / favourite, separator,

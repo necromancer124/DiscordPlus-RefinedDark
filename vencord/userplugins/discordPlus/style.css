@@ -479,6 +479,20 @@ body:has(:is([class^="layers_"], [class*=" layers_"]) > :is([class^="layer_"], [
 
 .dp-page-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; color: var(--dp-secondary); }
 .dp-page-head h1 { margin: 0; font-size: 22px; font-weight: 650; letter-spacing: -0.4px; color: var(--dp-text); }
+.dp-add-friend {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto !important;
+    min-height: 34px;
+    padding: 0 14px !important;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff !important;
+    background: var(--dp-accent) !important;
+}
+.dp-add-friend:hover { filter: brightness(1.1); }
 
 .dp-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 6px; }
 .dp-filters { display: flex; flex-wrap: wrap; gap: 7px; }

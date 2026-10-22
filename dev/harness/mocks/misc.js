@@ -28,7 +28,9 @@ export const openPluginModal = () => window.__dpLog.push("plugin settings");
 export const findByPropsLazy = (...props) => props.includes("addRelationship")
     ? {
         addRelationship: async ({ userId, type }) => { window.__dpLog.push((type === 2 ? "block " : "accept ") + userId); },
-        removeRelationship: async userId => { window.__dpLog.push("remove " + userId); }
+        removeRelationship: async userId => { window.__dpLog.push("remove " + userId); },
+        ignoreUser: async userId => { window.__dpLog.push("ignore " + userId); },
+        unignoreUser: async userId => { window.__dpLog.push("unignore " + userId); }
     }
     : props.includes("watchStream")
     ? {
