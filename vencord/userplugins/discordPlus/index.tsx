@@ -22,7 +22,7 @@ import { App } from "./components/App";
 import { clearLiveMessages, recordLiveMessage, refreshAll } from "./data";
 import { cleanupDom } from "./layout";
 import { go, ROUTES } from "./discordApi";
-import { onConnectionOpen, onVoiceChannelSelect, startRejoin, stopRejoin } from "./rejoin";
+import { onVoiceChannelSelect, startRejoin, stopRejoin } from "./rejoin";
 import { settings } from "./settings";
 import { checkForUpdateNow } from "./updates";
 import { VERSION } from "./version";
@@ -52,10 +52,7 @@ export default definePlugin({
             if (!optimistic) recordLiveMessage(message);
         },
         // Discord finished (re)connecting or replaced all presences: re-read friends and statuses.
-        CONNECTION_OPEN() {
-            setTimeout(refreshAll, 500);
-            onConnectionOpen();
-        },
+        CONNECTION_OPEN() { setTimeout(refreshAll, 500); },
         PRESENCES_REPLACE() { setTimeout(refreshAll, 100); },
         // Remembers your call, for the rejoin offer after a restart (rejoin.ts).
         VOICE_CHANNEL_SELECT({ channelId }: { channelId?: string | null; }) { onVoiceChannelSelect(channelId); }

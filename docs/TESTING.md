@@ -5,6 +5,10 @@ In the real client Discord did **not** rejoin the call after a restart (user rep
 instead. Vencord's real `pnpm testTsc`: passes. Harness: joining stores `lastCall`; plugin started before login, a
 startup "left the call" doesn't forget it, CONNECTION_OPEN → "Rejoin the call?", Rejoin → in vc1. Leaving yourself
 forgets it; older than 30 min, already in a call, setting off, or a later reconnect → no offer.
+Real client, first try: no popup, the saved call was still there afterwards, so the offer never ran (it waited for
+CONNECTION_OPEN, which most likely fired before the plugin listened). Now it waits until your account and the call's
+channel are loaded (plugin started within 90s of the page loading = Discord starting), then 2.5s more. Harness: plugin
+started with no user and no channels → nothing; once loaded → offer, Rejoin → in vc1. Console logs `[Discord+] rejoin:`.
 
 ## v1.14.0 — update check in the real client (2026-10-24)
 Installed with `-KeepChoices`, checked over a local DevTools port: Discord's page can reach GitHub's releases API
