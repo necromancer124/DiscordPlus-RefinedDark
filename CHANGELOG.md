@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.14.0 — 2026-10-24
 - **Update notice:** Discord+ checks GitHub for a newer release (shortly after Discord starts, then every 6 hours)
   and shows an **Update** chip in the header. Its popup links the release notes, copies `INSTALL.bat -KeepChoices`,
   or skips that version. Setting **Check for updates** (on); toolbox: **Check for Discord+ updates**. Uses GitHub's

@@ -1,10 +1,16 @@
 # Testing and verification
 
-## Update check (unreleased, 2026-10-24)
+## v1.14.0 — update check in the real client (2026-10-24)
+Installed with `-KeepChoices`, checked over a local DevTools port: Discord's page can reach GitHub's releases API
+(200, `v1.13.0`), so Vencord's CSP allows it. Automatic check 15s after start with this build (1.14.0): no chip.
+Faked a newer release: "Update" chip, popup with the right text, header lifted to z-index 1001 so the popup is above
+the call window (checked during a real call). A real check afterwards removed the chip again.
+
+## Update check (harness, 2026-10-24)
 Vencord's real `pnpm testTsc`: passes (it caught an invalid toast variant first). Harness: real GitHub answer →
 "v1.13.0 is the newest version", no chip. Faked v1.14.0 → chip "Update", popup text and release link, Copy command,
 closes on outside click and Escape, Skip hides it (stored 1.14.0), a manual check brings it back, setting off hides
-it, HTTP 403 → "Couldn't reach GitHub". Popup draws above the call window. **Not yet run in the real client.**
+it, HTTP 403 → "Couldn't reach GitHub". Popup draws above the call window.
 
 ## v1.13.0 — in the real client (2026-10-22)
 Installed with `INSTALL.bat -KeepChoices` on the author's PC, Discord started with a local DevTools port for checks
