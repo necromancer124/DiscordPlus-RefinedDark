@@ -1,5 +1,11 @@
 # Testing and verification
 
+## Update check (unreleased, 2026-10-24)
+Vencord's real `pnpm testTsc`: passes (it caught an invalid toast variant first). Harness: real GitHub answer →
+"v1.13.0 is the newest version", no chip. Faked v1.14.0 → chip "Update", popup text and release link, Copy command,
+closes on outside click and Escape, Skip hides it (stored 1.14.0), a manual check brings it back, setting off hides
+it, HTTP 403 → "Couldn't reach GitHub". Popup draws above the call window. **Not yet run in the real client.**
+
 ## v1.13.0 — in the real client (2026-10-22)
 Installed with `INSTALL.bat -KeepChoices` on the author's PC, Discord started with a local DevTools port for checks
 (screenshots kept private). Right after start: Discord+ running, 15 friends online at once (the offline bug is

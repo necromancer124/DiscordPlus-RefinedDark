@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+- **Update notice:** Discord+ checks GitHub for a newer release (shortly after Discord starts, then every 6 hours)
+  and shows an **Update** chip in the header. Its popup links the release notes, copies `INSTALL.bat -KeepChoices`,
+  or skips that version. Setting **Check for updates** (on); toolbox: **Check for Discord+ updates**. Uses GitHub's
+  public API without an account; Vencord already allows it.
+
 ## v1.13.0 — 2026-10-22
 - **Entrance animations:** when Discord+ Home opens (and on filter / sort changes, or when your friends first load)
   the cards appear in a diagonal **wave**. Settings: **Animations** = Wave, Pop, Slide, Flip, Fade or Off, and

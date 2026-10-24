@@ -117,9 +117,11 @@ All in **Settings → Vencord → Plugins → DiscordPlus**, or the sliders icon
 | Quest promo card → dot on the Quests tab | on |
 | Dock Discord's stream window into the call manager | on |
 | Quests shortcut chip | off |
+| Animations · animation speed | Wave · Normal (also Pop, Slide, Flip, Fade, Off) |
+| Check for updates (GitHub releases, shown in the header) | on |
 | Reduce motion | off (system setting always respected) |
 
-The Vencord toolbox also has **Discord+ home** and **Reset Discord+ window positions**.
+The Vencord toolbox also has **Discord+ home**, **Check for Discord+ updates** and **Reset Discord+ window positions**.
 
 ## Try the look without installing anything
 
@@ -152,7 +154,8 @@ DiscordPlus-RefinedDark/
 
 ## Releases (for maintainers)
 
-Releases are built by GitHub Actions. Update `CHANGELOG.md` with a `## vX.Y.Z — date` section, then:
+Releases are built by GitHub Actions. Bump the version (`project.json`, `vencord/userplugins/discordPlus/version.ts`,
+`installer/install.ps1`), add a `## vX.Y.Z — date` section to `CHANGELOG.md`, then:
 
 ```bash
 git tag v1.5.1
@@ -182,5 +185,6 @@ Discord client mods are **unofficial** and can break Discord's Terms of Service.
 
 Discord+ uses **no webpack patches**. It only reads Discord's stores and calls the same functions Discord's own
 buttons call: open DM, open profile, mute, deafen, disconnect, navigate. It never touches your token, sends
-messages, calls Discord's API directly, or exports data. Each feature runs inside its own error boundary: if a
+messages, calls Discord's API directly, or exports data. Its only request outside Discord is the optional update
+check: GitHub's public releases API, every 6 hours, no account (setting **Check for updates**). Each feature runs inside its own error boundary: if a
 Discord update breaks one, that feature renders nothing and the native UI it replaced comes back.

@@ -424,7 +424,62 @@ body:has(:is([class^="layers_"], [class*=" layers_"]) > :is([class^="layer_"], [
 }
 
 .dp-header-search input::placeholder { color: var(--dp-muted); }
-.dp-header-actions { display: flex; gap: 4px; }
+.dp-header-actions { display: flex; align-items: center; gap: 4px; }
+
+/* Update notice (a newer Discord+ release on GitHub) */
+.dp-update { position: relative; }
+/* While the popup is open the header sits above the call window (1000), still below Discord's popouts. */
+.dp-header:has(.dp-update-pop) { z-index: 1001; }
+.dp-update-chip {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 10px !important;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dp-accent) !important;
+    background: var(--dp-accent-soft) !important;
+}
+.dp-update-chip:hover { filter: brightness(1.15); }
+.dp-update-pop {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 300px;
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--dp-secondary);
+    background: var(--dp-raised);
+    border: 1px solid var(--dp-line-strong);
+    border-radius: 12px;
+    box-shadow: 0 14px 34px rgb(0 0 0 / 35%);
+}
+.dp-update-pop strong { font-size: 14px; color: var(--dp-text); }
+.dp-update-pop p { margin: 0; }
+.dp-update-pop code { padding: 1px 5px; font-size: 12px; color: var(--dp-text); background: var(--dp-chip); border-radius: 5px; }
+.dp-update-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.dp-update-actions > * {
+    display: inline-flex !important;
+    align-items: center;
+    height: 30px;
+    padding: 0 10px !important;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dp-text) !important;
+    background: var(--dp-chip) !important;
+    text-decoration: none !important;
+}
+.dp-update-actions > .dp-update-primary { color: #fff !important; background: var(--dp-accent) !important; }
+.dp-update-actions > .dp-update-skip { color: var(--dp-muted) !important; background: none !important; }
+.dp-update-actions > *:hover { filter: brightness(1.12); }
 
 /* Call pill (only while in a voice call) */
 .dp-call-pill {

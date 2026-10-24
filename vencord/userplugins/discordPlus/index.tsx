@@ -7,7 +7,8 @@
  * Safety rules this plugin follows:
  * - No webpack patches: it only reads Discord's stores and calls the same action creators
  *   Discord's own buttons use (open DM, profile, mute, deafen, disconnect, navigation).
- * - No tokens, no REST calls, no message sending, no data export.
+ * - No tokens, no Discord REST calls, no message sending, no data export. The one outside request is the optional
+ *   update check: GitHub's public releases API (updates.ts, setting "Check for updates").
  * - Every change to Discord's DOM is a `dp-*` class; stop() removes all of them.
  *
  * APIs were checked against Vencord source at commit 32c9063 (2026-10-14).
@@ -22,6 +23,8 @@ import { clearLiveMessages, recordLiveMessage, refreshAll } from "./data";
 import { cleanupDom } from "./layout";
 import { go, ROUTES } from "./discordApi";
 import { settings } from "./settings";
+import { checkForUpdateNow } from "./updates";
+import { VERSION } from "./version";
 // `?managed`: Vencord injects this CSS on start and removes it on stop.
 import managedStyle from "./style.css?managed";
 
@@ -54,6 +57,7 @@ export default definePlugin({
 
     toolboxActions: {
         "Discord+ home": () => go(ROUTES.friends),
+        "Check for Discord+ updates": () => { checkForUpdateNow(); },
         "Reset Discord+ window positions": () => {
             settings.store.dockPlacement = null;
             settings.store.callPlacement = null;
@@ -64,7 +68,7 @@ export default definePlugin({
 
     start() {
         startRoot();
-        console.log("[Discord+] v1.13.0 started");
+        console.log(`[Discord+] v${VERSION} started`);
     },
 
     stop() {

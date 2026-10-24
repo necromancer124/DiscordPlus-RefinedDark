@@ -8,6 +8,7 @@ import { useEffect, useState } from "@webpack/common";
 import { HEADER_HEIGHT, LayoutInfo, markNativeToolbar, measure, setBodyClass, setDmColumnHidden, setPushed, tidyPanels } from "../layout";
 import { go, ROUTES } from "../discordApi";
 import { settings } from "../settings";
+import { clearUpdate, startUpdateChecks, stopUpdateChecks } from "../updates";
 import { CallManager } from "./CallManager";
 import { Header, HomePage } from "./Header";
 import { Home } from "./Home";
@@ -90,7 +91,7 @@ function QuestChip() {
 export function App() {
     const s = settings.use([
         "homeOverlay", "globalHeader", "fullWidthDms", "floatingDock", "callManager", "hideNativeUserPanel",
-        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow", "animation", "animationSpeed"
+        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow", "animation", "animationSpeed", "checkUpdates"
     ]);
     const layout = useLayout();
     const [page, setPage] = useState<HomePage>("friends");
@@ -117,6 +118,13 @@ export function App() {
     const hideMePanel = hideDmColumn && layout.kind !== "guild" && s.callManager;
 
     useEffect(() => { if (!onHome) setClassic(false); }, [onHome]);
+
+    // Update check runs while Discord+ runs and the setting is on.
+    useEffect(() => {
+        if (!s.checkUpdates) { clearUpdate(); return; }
+        startUpdateChecks();
+        return stopUpdateChecks;
+    }, [s.checkUpdates]);
 
     // Header push (moves Discord's sidebar + page below our header). Re-applied periodically
     // because Discord re-creates those elements and rewrites their className when it re-renders.

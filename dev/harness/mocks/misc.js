@@ -54,3 +54,4 @@ export const findStoreLazy = () => speaking;
 // @vencord/discord-types/enums
 export const ActivityType = { PLAYING: 0, STREAMING: 1, LISTENING: 2, WATCHING: 3, CUSTOM_STATUS: 4, COMPETING: 5, HANG_STATUS: 6 };
 export const RelationshipType = { NONE: 0, FRIEND: 1, BLOCKED: 2, INCOMING_REQUEST: 3, OUTGOING_REQUEST: 4 };
+export const copyWithToast = (text, msg) => window.__dpLog.push("copy " + text);

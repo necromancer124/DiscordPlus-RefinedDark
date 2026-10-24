@@ -144,6 +144,11 @@ export const settings = definePluginSettings({
             { label: "Relaxed", value: "slow" }
         ]
     },
+    checkUpdates: {
+        type: OptionType.BOOLEAN,
+        description: "Check GitHub for a newer Discord+ and show it in the header (asks GitHub's public releases page every 6 hours, no account)",
+        default: true
+    },
     reduceMotion: {
         type: OptionType.BOOLEAN,
         description: "Turn off Discord+ animations (system reduced-motion is always respected)",
@@ -175,6 +180,11 @@ export const settings = definePluginSettings({
     callMinimized: {
         type: OptionType.CUSTOM,
         default: false
+    },
+    /** A release you chose to skip ("Skip this version"). */
+    dismissedUpdate: {
+        type: OptionType.CUSTOM,
+        default: ""
     }
 });
 
