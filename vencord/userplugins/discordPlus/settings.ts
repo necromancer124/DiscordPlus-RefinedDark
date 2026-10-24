@@ -144,6 +144,11 @@ export const settings = definePluginSettings({
             { label: "Relaxed", value: "slow" }
         ]
     },
+    askBeforeRejoin: {
+        type: OptionType.BOOLEAN,
+        description: "When Discord starts and puts you back in the call you were in, leave it and ask \"Rejoin?\" first",
+        default: true
+    },
     checkUpdates: {
         type: OptionType.BOOLEAN,
         description: "Check GitHub for a newer Discord+ and show it in the header (asks GitHub's public releases page every 6 hours, no account)",

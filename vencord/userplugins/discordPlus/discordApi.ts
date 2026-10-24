@@ -227,6 +227,11 @@ export function toggleDeafen() {
     try { MediaActions.toggleSelfDeaf(); } catch (e) { log("toggle deafen", e); }
 }
 
+/** Join a voice channel (or a DM call), as clicking it does. */
+export function joinVoice(channelId: string) {
+    try { VoiceActions.selectVoiceChannel(channelId); } catch (e) { log("join call", e); }
+}
+
 export function disconnectVoice() {
     try { VoiceActions.selectVoiceChannel(null); } catch (e) { log("disconnect", e); }
 }

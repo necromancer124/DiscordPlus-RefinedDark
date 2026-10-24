@@ -22,6 +22,7 @@ import { App } from "./components/App";
 import { clearLiveMessages, recordLiveMessage, refreshAll } from "./data";
 import { cleanupDom } from "./layout";
 import { go, ROUTES } from "./discordApi";
+import { onConnectionOpen, onVoiceChannelSelect, startRejoinGuard, stopRejoinGuard } from "./rejoin";
 import { settings } from "./settings";
 import { checkForUpdateNow } from "./updates";
 import { VERSION } from "./version";
@@ -51,8 +52,13 @@ export default definePlugin({
             if (!optimistic) recordLiveMessage(message);
         },
         // Discord finished (re)connecting or replaced all presences: re-read friends and statuses.
-        CONNECTION_OPEN() { setTimeout(refreshAll, 500); },
-        PRESENCES_REPLACE() { setTimeout(refreshAll, 100); }
+        CONNECTION_OPEN() {
+            setTimeout(refreshAll, 500);
+            onConnectionOpen();
+        },
+        PRESENCES_REPLACE() { setTimeout(refreshAll, 100); },
+        // Discord putting you back in a call on startup: ask first (rejoin.ts).
+        VOICE_CHANNEL_SELECT({ channelId }: { channelId?: string | null; }) { onVoiceChannelSelect(channelId); }
     },
 
     toolboxActions: {
@@ -67,11 +73,13 @@ export default definePlugin({
     },
 
     start() {
+        startRejoinGuard();
         startRoot();
         console.log(`[Discord+] v${VERSION} started`);
     },
 
     stop() {
+        stopRejoinGuard();
         stopRoot();
         cleanupDom();
         clearLiveMessages();

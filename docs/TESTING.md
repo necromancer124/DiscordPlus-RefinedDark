@@ -1,5 +1,11 @@
 # Testing and verification
 
+## Ask before rejoining (unreleased, 2026-10-24)
+Vencord's real `pnpm testTsc`: passes. Harness (plugin started before login, then CONNECTION_OPEN with a voice
+channel set): left the call, "Rejoin the call?" shown; Rejoin → back in vc1, Stay out → not in a call. Not armed when
+the plugin is turned on while logged in; setting off → nothing; only the first rejoin is handled. **Not yet run in
+the real client:** the real restart timing, and a click of your own during startup (synthetic clicks are untrusted).
+
 ## v1.14.0 — update check in the real client (2026-10-24)
 Installed with `-KeepChoices`, checked over a local DevTools port: Discord's page can reach GitHub's releases API
 (200, `v1.13.0`), so Vencord's CSP allows it. Automatic check 15s after start with this build (1.14.0): no chip.
