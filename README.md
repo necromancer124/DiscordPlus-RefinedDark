@@ -119,7 +119,7 @@ All in **Settings → Vencord → Plugins → DiscordPlus**, or the sliders icon
 | Quests shortcut chip | off |
 | Animations · animation speed | Wave · Normal (also Pop, Slide, Flip, Fade, Off) |
 | Check for updates (GitHub releases, shown in the header) | on |
-| Ask before rejoining a call after Discord starts | on |
+| Offer to rejoin a call after Discord restarts | on |
 | Reduce motion | off (system setting always respected) |
 
 The Vencord toolbox also has **Discord+ home**, **Check for Discord+ updates** and **Reset Discord+ window positions**.

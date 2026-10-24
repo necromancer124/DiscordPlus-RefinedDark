@@ -1,10 +1,10 @@
 # Changelog
 
 ## Unreleased
-- **Ask before rejoining a call:** when Discord starts and puts you back in the call you were in, Discord+ leaves it
-  right away and asks **Rejoin the call?** (Rejoin / Stay out). Calls you join yourself, also during startup, are
-  never touched. Discord can't be stopped before it rejoins without patching it, so the others may see you join and
-  leave for a moment. Setting **Ask before rejoining a call after Discord starts** (on).
+- **Rejoin the call?** Discord doesn't reconnect you to voice after it closes. If it closes while you're in a call
+  (restart, update, crash, quit) and opens again within 30 minutes, Discord+ offers **Rejoin** / **Not now**. While
+  you're in a call it remembers which one (saved about once a minute); leaving a call yourself forgets it. It never
+  joins without your click. Setting **Offer to rejoin a call after Discord restarts** (on).
 
 ## v1.14.0 — 2026-10-24
 - **Update notice:** Discord+ checks GitHub for a newer release (shortly after Discord starts, then every 6 hours)

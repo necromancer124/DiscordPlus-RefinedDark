@@ -144,9 +144,9 @@ export const settings = definePluginSettings({
             { label: "Relaxed", value: "slow" }
         ]
     },
-    askBeforeRejoin: {
+    rejoinPrompt: {
         type: OptionType.BOOLEAN,
-        description: "When Discord starts and puts you back in the call you were in, leave it and ask \"Rejoin?\" first",
+        description: "When Discord opens again after closing during a call, offer to rejoin that call",
         default: true
     },
     checkUpdates: {
@@ -185,6 +185,11 @@ export const settings = definePluginSettings({
     callMinimized: {
         type: OptionType.CUSTOM,
         default: false
+    },
+    /** The call you were in, for the rejoin offer after a restart (rejoin.ts). */
+    lastCall: {
+        type: OptionType.CUSTOM,
+        default: null as { channelId: string; at: number; } | null
     },
     /** A release you chose to skip ("Skip this version"). */
     dismissedUpdate: {

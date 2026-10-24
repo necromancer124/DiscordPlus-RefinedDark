@@ -22,7 +22,7 @@ import { App } from "./components/App";
 import { clearLiveMessages, recordLiveMessage, refreshAll } from "./data";
 import { cleanupDom } from "./layout";
 import { go, ROUTES } from "./discordApi";
-import { onConnectionOpen, onVoiceChannelSelect, startRejoinGuard, stopRejoinGuard } from "./rejoin";
+import { onConnectionOpen, onVoiceChannelSelect, startRejoin, stopRejoin } from "./rejoin";
 import { settings } from "./settings";
 import { checkForUpdateNow } from "./updates";
 import { VERSION } from "./version";
@@ -57,7 +57,7 @@ export default definePlugin({
             onConnectionOpen();
         },
         PRESENCES_REPLACE() { setTimeout(refreshAll, 100); },
-        // Discord putting you back in a call on startup: ask first (rejoin.ts).
+        // Remembers your call, for the rejoin offer after a restart (rejoin.ts).
         VOICE_CHANNEL_SELECT({ channelId }: { channelId?: string | null; }) { onVoiceChannelSelect(channelId); }
     },
 
@@ -73,13 +73,13 @@ export default definePlugin({
     },
 
     start() {
-        startRejoinGuard();
+        startRejoin();
         startRoot();
         console.log(`[Discord+] v${VERSION} started`);
     },
 
     stop() {
-        stopRejoinGuard();
+        stopRejoin();
         stopRoot();
         cleanupDom();
         clearLiveMessages();

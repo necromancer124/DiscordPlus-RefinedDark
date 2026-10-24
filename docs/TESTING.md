@@ -1,10 +1,10 @@
 # Testing and verification
 
-## Ask before rejoining (unreleased, 2026-10-24)
-Vencord's real `pnpm testTsc`: passes. Harness (plugin started before login, then CONNECTION_OPEN with a voice
-channel set): left the call, "Rejoin the call?" shown; Rejoin → back in vc1, Stay out → not in a call. Not armed when
-the plugin is turned on while logged in; setting off → nothing; only the first rejoin is handled. **Not yet run in
-the real client:** the real restart timing, and a click of your own during startup (synthetic clicks are untrusted).
+## Rejoin offer (unreleased, 2026-10-24)
+In the real client Discord did **not** rejoin the call after a restart (user report), so the feature offers the rejoin
+instead. Vencord's real `pnpm testTsc`: passes. Harness: joining stores `lastCall`; plugin started before login, a
+startup "left the call" doesn't forget it, CONNECTION_OPEN → "Rejoin the call?", Rejoin → in vc1. Leaving yourself
+forgets it; older than 30 min, already in a call, setting off, or a later reconnect → no offer.
 
 ## v1.14.0 — update check in the real client (2026-10-24)
 Installed with `-KeepChoices`, checked over a local DevTools port: Discord's page can reach GitHub's releases API
