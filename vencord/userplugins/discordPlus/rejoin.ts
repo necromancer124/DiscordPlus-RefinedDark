@@ -21,6 +21,11 @@ const STARTUP_MS = 90_000;
 const READY_TIMEOUT_MS = 60_000;
 /** Once loaded, a moment more so the offer doesn't appear in the middle of Discord's own loading screen. */
 const SETTLE_MS = 2_500;
+/**
+ * Quitting Discord during a call first leaves the call, then closes. So a "left the call" only forgets it if Discord
+ * is still open this long afterwards; when Discord closes in between, the call stays saved for the offer.
+ */
+const FORGET_AFTER_MS = 5_000;
 
 export interface LastCall {
     channelId: string;
@@ -29,13 +34,17 @@ export interface LastCall {
 
 let heartbeat: ReturnType<typeof setInterval> | undefined;
 let waiting: ReturnType<typeof setInterval> | undefined;
+let forgetTimer: ReturnType<typeof setTimeout> | undefined;
 /** Until the startup offer is decided, a "left the call" from Discord starting up must not forget the call. */
 let decided = true;
 let unloading = false;
 
 const log = (...a: unknown[]) => console.info("[Discord+] rejoin:", ...a);
 const currentVoice = () => safe(() => SelectedChannelStore.getVoiceChannelId() ?? null, null as string | null);
-const remember = (channelId: string) => { settings.store.lastCall = { channelId, at: Date.now() }; };
+const remember = (channelId: string) => {
+    clearTimeout(forgetTimer);
+    settings.store.lastCall = { channelId, at: Date.now() };
+};
 const forget = () => { if (settings.store.lastCall) settings.store.lastCall = null; };
 const onUnload = () => { unloading = true; };
 
@@ -68,7 +77,8 @@ export function startRejoin() {
 export function stopRejoin() {
     clearInterval(heartbeat);
     clearInterval(waiting);
-    heartbeat = waiting = undefined;
+    clearTimeout(forgetTimer);
+    heartbeat = waiting = forgetTimer = undefined;
     window.removeEventListener("beforeunload", onUnload);
 }
 
@@ -77,7 +87,8 @@ export function onVoiceChannelSelect(channelId: string | null | undefined) {
     if (channelId) {
         remember(channelId);
     } else if (decided && !unloading) {
-        forget();
+        clearTimeout(forgetTimer);
+        forgetTimer = setTimeout(() => { if (!unloading && !currentVoice()) forget(); }, FORGET_AFTER_MS);
     }
 }
 

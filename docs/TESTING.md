@@ -9,6 +9,11 @@ Real client, first try: no popup, the saved call was still there afterwards, so 
 CONNECTION_OPEN, which most likely fired before the plugin listened). Now it waits until your account and the call's
 channel are loaded (plugin started within 90s of the page loading = Discord starting), then 2.5s more. Harness: plugin
 started with no user and no channels → nothing; once loaded → offer, Rejoin → in vc1. Console logs `[Discord+] rejoin:`.
+Second real-client finding: quitting Discord during a call leaves the call first, which erased the saved call; a
+"left the call" now only forgets it if Discord is still open 5s later. **Real client (2026-10-25):** a saved call,
+Discord force-closed (like a crash) and started again: "waiting for Discord to load" at 3s, the offer at 7.4s, "Rejoin
+the call? You were in 🔊 <channel> in <server> when Discord closed." stayed up 40s with no input; Not now → not in a
+call, saved call forgotten.
 
 ## v1.14.0 — update check in the real client (2026-10-24)
 Installed with `-KeepChoices`, checked over a local DevTools port: Discord's page can reach GitHub's releases API
