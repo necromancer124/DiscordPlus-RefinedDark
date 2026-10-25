@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.15.0 — 2026-10-25
 - **Rejoin the call?** Discord doesn't reconnect you to voice after it closes. If it closes while you're in a call
   (restart, update, crash, quit) and opens again within 30 minutes, Discord+ offers **Rejoin** / **Not now**. While
   you're in a call it remembers which one (saved about once a minute); leaving a call yourself forgets it. It never

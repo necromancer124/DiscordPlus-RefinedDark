@@ -1,6 +1,6 @@
 # Testing and verification
 
-## Rejoin offer (unreleased, 2026-10-24)
+## v1.15.0 — rejoin offer (2026-10-24 to 10-25)
 In the real client Discord did **not** rejoin the call after a restart (user report), so the feature offers the rejoin
 instead. Vencord's real `pnpm testTsc`: passes. Harness: joining stores `lastCall`; plugin started before login, a
 startup "left the call" doesn't forget it, CONNECTION_OPEN → "Rejoin the call?", Rejoin → in vc1. Leaving yourself
