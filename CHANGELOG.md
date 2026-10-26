@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (branch claude/card-call)
+## v1.17.0 — 2026-10-26
 - **Call from the friend card menu (⋮ / right-click):** **Call** and **Video call** open your chat with that friend and
   press Discord's own Start Voice Call / Start Video Call button, so ringing works exactly as in Discord. With no chat
   yet, their profile opens with a hint.

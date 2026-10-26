@@ -1,9 +1,10 @@
 # Testing and verification
 
-## Call from the card menu (branch claude/card-call, 2026-10-26)
+## v1.17.0 — call from the card menu (2026-10-26)
 Vencord's real `pnpm testTsc`: passes. Harness (stand-in DM header buttons): menu Message / Call / Video call / …;
 Call → DM opened, "Start Voice Call" pressed; Video call → "Start Video Call" pressed; friend without a chat → profile
-+ hint. **Not yet checked in the real client:** the exact aria-labels of Discord's DM call buttons.
++ hint. **Real client:** the card menu shows Call / Video call; a DM header has "Start Voice Call" and "Start Video
+Call" (exact matches). Not pressed, nobody was called.
 
 ## v1.16.0 — voice and notes on cards (2026-10-26)
 Vencord's real `pnpm testTsc`: passes. Harness: friend in another visible channel → "Lounge · Night Shift server" +
