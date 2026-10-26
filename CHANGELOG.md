@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased (branch claude/card-call)
+- **Call from the friend card menu (⋮ / right-click):** **Call** and **Video call** open your chat with that friend and
+  press Discord's own Start Voice Call / Start Video Call button, so ringing works exactly as in Discord. With no chat
+  yet, their profile opens with a hint.
+
 ## v1.16.0 — 2026-10-26
 - **Voice on friend cards:** a friend in a voice channel gets a row on their card with the channel and server, a
   **Join** button, and **Watch** (with LIVE) when they're streaming; "You're here" when you're in the same channel.

@@ -215,6 +215,34 @@ export function toggleScreenShare(guildId: string | null | undefined, channelId:
     safe(() => showToast({ text: "Use Discord's Share Your Screen button in the call" }), undefined);
 }
 
+const CALL_BUTTON = { voice: /^start voice call$/i, video: /^start video call$/i };
+
+/**
+ * Call a friend the way Discord's own buttons do: open your chat with them and press Discord's "Start Voice Call" /
+ * "Start Video Call" button at the top of it, so ringing and everything after it is Discord's normal flow.
+ * Without a chat yet, their profile opens (its Message button creates the chat; call from there).
+ */
+export function startCall(userId: string, video = false) {
+    const dmId = safe(() => ChannelStore.getDMFromUserId(userId), undefined);
+    if (!dmId) {
+        openProfile(userId);
+        safe(() => showToast({ text: "Open a chat with them first, then call from the top of the chat" }), undefined);
+        return;
+    }
+    openChannel(dmId);
+    const pattern = video ? CALL_BUTTON.video : CALL_BUTTON.voice;
+    let tries = 0;
+    const press = () => {
+        const button = [...document.querySelectorAll<HTMLElement>("[aria-label]")]
+            .filter(el => !el.closest("#vc-discordplus-root"))
+            .find(el => pattern.test(el.getAttribute("aria-label") ?? ""));
+        if (button) { button.click(); return; }
+        if (++tries < 25) { setTimeout(press, 120); return; }
+        safe(() => showToast({ text: `Use the ${video ? "video" : "phone"} icon at the top of the chat to call` }), undefined);
+    };
+    setTimeout(press, 150);
+}
+
 export function openProfile(userId: string) {
     openUserProfile(userId).catch(e => log("open profile", e));
 }

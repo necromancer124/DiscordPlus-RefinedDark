@@ -10,7 +10,7 @@ import {
 } from "../data";
 import {
     acceptFriendRequest, blockUser, ignoreUser, joinVoice, openChannel, openNativeAddFriend, openDm, openProfile, relativeTime, removeFriend, removeFriendRequest,
-    unblockUser, unignoreUser, watchStream
+    startCall, unblockUser, unignoreUser, watchStream
 } from "../discordApi";
 import { FriendFilter, settings, toggleFavorite } from "../settings";
 import { Avatar, useEntrance } from "./common";
@@ -60,6 +60,10 @@ function openFriendMenu(e: React.MouseEvent, row: FriendRow) {
     ContextMenuApi.openContextMenu(e, () => (
         <Menu.Menu navId="dp-friend-menu" onClose={ContextMenuApi.closeContextMenu}>
             {row.kind !== "blocked" && <Menu.MenuItem id="dp-message" label="Message" action={() => openDm(row.id)} />}
+            {row.kind === "friend" && <>
+                <Menu.MenuItem id="dp-call" label="Call" action={() => startCall(row.id)} />
+                <Menu.MenuItem id="dp-video-call" label="Video call" action={() => startCall(row.id, true)} />
+            </>}
             <Menu.MenuItem id="dp-profile" label="View profile" action={() => openProfile(row.id)} />
             {row.kind === "friend" && (
                 <Menu.MenuItem
