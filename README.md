@@ -187,6 +187,7 @@ Discord client mods are **unofficial** and can break Discord's Terms of Service.
 
 Discord+ uses **no webpack patches**. It only reads Discord's stores and calls the same functions Discord's own
 buttons call: open DM, open profile, mute, deafen, disconnect, navigate. It never touches your token, sends
-messages, calls Discord's API directly, or exports data. Its only request outside Discord is the optional update
-check: GitHub's public releases API, every 6 hours, no account (setting **Check for updates**). Each feature runs inside its own error boundary: if a
+messages or exports data. It makes two kinds of requests: one read-only request to Discord for your own notes after
+it starts (setting **Show your notes on friend cards**), and the optional update check against GitHub's public
+releases API every 6 hours, no account (setting **Check for updates**). Each feature runs inside its own error boundary: if a
 Discord update breaks one, that feature renders nothing and the native UI it replaced comes back.

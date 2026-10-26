@@ -114,7 +114,7 @@ export const settings = definePluginSettings({
     },
     showNotes: {
         type: OptionType.BOOLEAN,
-        description: "Show your private Discord note about a friend on their card (and search by it)",
+        description: "Show your private Discord notes on friend cards and search by them (loads your notes from Discord once after start)",
         default: true
     },
     defaultFilter: {

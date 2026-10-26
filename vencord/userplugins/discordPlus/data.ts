@@ -10,6 +10,7 @@ import {
 } from "@webpack/common";
 
 import { safe, snowflakeTime } from "./discordApi";
+import { NotesStore } from "./notes";
 import { isFavorite } from "./settings";
 
 /** Presence as shown by Discord+: Discord's four statuses plus "streaming" and "online on mobile". */
@@ -200,7 +201,7 @@ const NoteStore: { getNote(userId: string): { note?: string; } | string | undefi
 
 export const friendStores = () => [
     RelationshipStore, PresenceStore, UserStore, ReadStateStore, ChannelStore, MessageStore, LiveMessageStore,
-    VoiceStateStore, ApplicationStreamingStore, SelectedChannelStore, NoteStore
+    VoiceStateStore, ApplicationStreamingStore, SelectedChannelStore, NoteStore, NotesStore
 ];
 
 function friendVoice(userId: string): FriendVoice | null {
@@ -223,11 +224,14 @@ function friendVoice(userId: string): FriendVoice | null {
     };
 }
 
+/** Discord's own copy when it has loaded that note (opened profile), else the copy Discord+ loaded (notes.ts). */
 function noteOf(userId: string): string {
     const fromRelationships = safe(() => RelationshipStore.getNote?.(userId), undefined);
     if (typeof fromRelationships === "string" && fromRelationships) return fromRelationships.trim();
     const n = safe(() => NoteStore.getNote(userId), undefined);
-    return (typeof n === "string" ? n : n?.note ?? "").trim();
+    const fromDiscord = typeof n === "string" ? n : n && !(n as any).loading ? n.note : undefined;
+    if (typeof fromDiscord === "string") return fromDiscord.trim();
+    return NotesStore.get(userId);
 }
 
 /** Make every Discord+ list re-read Discord's stores (refresh button, and once Discord finishes connecting). */

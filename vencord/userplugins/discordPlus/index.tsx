@@ -1,5 +1,5 @@
 /*
- * Discord+ Refined Dark — Vencord userplugin, v1.15
+ * Discord+ Refined Dark — Vencord userplugin, v1.16
  * SPDX-License-Identifier: CC-BY-NC-4.0
  *
  * "Just Discord, but substantially better." See MASTER_PROMPT.md / DESIGN.md in the project root.
@@ -7,8 +7,9 @@
  * Safety rules this plugin follows:
  * - No webpack patches: it only reads Discord's stores and calls the same action creators
  *   Discord's own buttons use (open DM, profile, mute, deafen, disconnect, navigation).
- * - No tokens, no Discord REST calls, no message sending, no data export. The one outside request is the optional
- *   update check: GitHub's public releases API (updates.ts, setting "Check for updates").
+ * - No tokens, no message sending, no data export. Requests: one read-only "your notes" request to Discord through
+ *   Discord's own REST client after start (notes.ts, setting "Show your notes on friend cards"), and the optional
+ *   update check against GitHub's public releases API (updates.ts, setting "Check for updates").
  * - Every change to Discord's DOM is a `dp-*` class; stop() removes all of them.
  *
  * APIs were checked against Vencord source at commit 32c9063 (2026-10-14).
@@ -22,6 +23,7 @@ import { App } from "./components/App";
 import { clearLiveMessages, recordLiveMessage, refreshAll } from "./data";
 import { cleanupDom } from "./layout";
 import { go, ROUTES } from "./discordApi";
+import { onNoteUpdate, startNotes, stopNotes } from "./notes";
 import { onVoiceChannelSelect, startRejoin, stopRejoin } from "./rejoin";
 import { settings } from "./settings";
 import { checkForUpdateNow } from "./updates";
@@ -55,7 +57,9 @@ export default definePlugin({
         CONNECTION_OPEN() { setTimeout(refreshAll, 500); },
         PRESENCES_REPLACE() { setTimeout(refreshAll, 100); },
         // Remembers your call, for the rejoin offer after a restart (rejoin.ts).
-        VOICE_CHANNEL_SELECT({ channelId }: { channelId?: string | null; }) { onVoiceChannelSelect(channelId); }
+        VOICE_CHANNEL_SELECT({ channelId }: { channelId?: string | null; }) { onVoiceChannelSelect(channelId); },
+        // You edited a note: keep the friend cards' copy current (notes.ts).
+        USER_NOTE_UPDATE({ id, note }: { id?: string; note?: string | null; }) { onNoteUpdate(id, note); }
     },
 
     toolboxActions: {
@@ -71,12 +75,14 @@ export default definePlugin({
 
     start() {
         startRejoin();
+        startNotes();
         startRoot();
         console.log(`[Discord+] v${VERSION} started`);
     },
 
     stop() {
         stopRejoin();
+        stopNotes();
         stopRoot();
         cleanupDom();
         clearLiveMessages();

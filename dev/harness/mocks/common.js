@@ -114,3 +114,5 @@ export const ContextMenuApi = {
     },
     closeContextMenu() { document.getElementById("mock-layer").hidden = true; }
 };
+// Discord's REST client: only "your notes" is used.
+export const RestAPI = { get: async ({ url }) => { window.__dpLog.push("rest " + url); return { status: 200, body: url === "/users/@me/notes" ? { echo: "the friend with the cat avatar" } : {} }; } };

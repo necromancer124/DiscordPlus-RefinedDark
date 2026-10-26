@@ -8,6 +8,7 @@ import { useEffect, useState } from "@webpack/common";
 import { HEADER_HEIGHT, LayoutInfo, markNativeToolbar, measure, setBodyClass, setDmColumnHidden, setPushed, tidyPanels } from "../layout";
 import { go, ROUTES } from "../discordApi";
 import { settings } from "../settings";
+import { notesSettingChanged } from "../notes";
 import { clearUpdate, startUpdateChecks, stopUpdateChecks } from "../updates";
 import { CallManager } from "./CallManager";
 import { Header, HomePage } from "./Header";
@@ -91,7 +92,7 @@ function QuestChip() {
 export function App() {
     const s = settings.use([
         "homeOverlay", "globalHeader", "fullWidthDms", "floatingDock", "callManager", "hideNativeUserPanel",
-        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow", "animation", "animationSpeed", "checkUpdates"
+        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow", "animation", "animationSpeed", "checkUpdates", "showNotes"
     ]);
     const layout = useLayout();
     const [page, setPage] = useState<HomePage>("friends");
@@ -125,6 +126,9 @@ export function App() {
         startUpdateChecks();
         return stopUpdateChecks;
     }, [s.checkUpdates]);
+
+    // Notes turned on later: load them now (notes.ts loads them once after start otherwise).
+    useEffect(() => { notesSettingChanged(s.showNotes); }, [s.showNotes]);
 
     // Header push (moves Discord's sidebar + page below our header). Re-applied periodically
     // because Discord re-creates those elements and rewrites their className when it re-renders.
