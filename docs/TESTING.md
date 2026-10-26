@@ -1,5 +1,11 @@
 # Testing and verification
 
+## Voice and notes on cards (branch claude/card-voice-notes, 2026-10-26)
+Vencord's real `pnpm testTsc`: passes. Harness: friend in another visible channel → "Lounge · Night Shift server" +
+Join (joins, profile not opened); streaming friend in your channel → LIVE, "You're here", Watch (watch + call page);
+channel you can't see → "In a voice channel", no buttons; notes under the status, search "pizza" → that friend only;
+both settings off → no voice rows or notes. **Not yet run in the real client** (the note store's name is unverified).
+
 ## v1.15.0 — rejoin offer (2026-10-24 to 10-25)
 In the real client Discord did **not** rejoin the call after a restart (user report), so the feature offers the rejoin
 instead. Vencord's real `pnpm testTsc`: passes. Harness: joining stores `lastCall`; plugin started before login, a

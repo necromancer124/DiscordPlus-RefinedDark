@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: CC-BY-NC-4.0
  */
 import { ActivityType, RelationshipType } from "@vencord/discord-types/enums";
+import { findStoreLazy } from "@webpack";
 import {
-    ChannelStore, MessageStore, PresenceStore, PrivateChannelSortStore, ReadStateStore,
-    RelationshipStore, useEffect, UserStore, useRef, useState
+    ApplicationStreamingStore, ChannelStore, GuildStore, MessageStore, PresenceStore, PrivateChannelSortStore,
+    ReadStateStore, RelationshipStore, SelectedChannelStore, useEffect, UserStore, useRef, useState, VoiceStateStore
 } from "@webpack/common";
 
 import { safe, snowflakeTime } from "./discordApi";
@@ -46,6 +47,22 @@ export interface FriendRow {
     favorite: boolean;
     /** Discord's "Ignore": their messages and activity are tucked away, they aren't told. */
     ignored: boolean;
+    /** The voice channel they're in right now, if you can see it. */
+    voice: FriendVoice | null;
+    /** Your private Discord note about them ("" if none). */
+    note: string;
+}
+
+export interface FriendVoice {
+    channelId: string;
+    guildId: string | null;
+    /** "channel · server", or a generic label when the channel isn't visible to you. */
+    place: string;
+    /** A server voice channel you can see (Discord still checks your permission when you join). */
+    joinable: boolean;
+    streaming: boolean;
+    /** You're in the same channel. */
+    here: boolean;
 }
 
 export interface ConversationRow {
@@ -178,7 +195,40 @@ export function clearLiveMessages() {
  * Read at call time, never captured at load: Vencord fills these store bindings in while Discord starts, so an
  * array built when this file loads could hold `undefined` forever.
  */
-export const friendStores = () => [RelationshipStore, PresenceStore, UserStore, ReadStateStore, ChannelStore, MessageStore, LiveMessageStore];
+// Discord keeps notes in their own store in current versions (older ones had them on RelationshipStore).
+const NoteStore: { getNote(userId: string): { note?: string; } | string | undefined; } = findStoreLazy("NoteStore");
+
+export const friendStores = () => [
+    RelationshipStore, PresenceStore, UserStore, ReadStateStore, ChannelStore, MessageStore, LiveMessageStore,
+    VoiceStateStore, ApplicationStreamingStore, SelectedChannelStore, NoteStore
+];
+
+function friendVoice(userId: string): FriendVoice | null {
+    const state = safe(() => VoiceStateStore.getVoiceStateForUser(userId), undefined);
+    const channelId = state?.channelId;
+    if (!channelId) return null;
+    const channel = safe(() => ChannelStore.getChannel(channelId), undefined);
+    const guildId: string | null = channel?.guild_id ?? state?.guildId ?? null;
+    const guild = guildId ? safe(() => GuildStore.getGuild(guildId)?.name, undefined) : undefined;
+    const place = !channel ? "In a voice channel"
+        : guildId ? `${channel.name}${guild ? ` · ${guild}` : ""}`
+            : "In a private call";
+    return {
+        channelId,
+        guildId,
+        place,
+        joinable: !!channel && !!guildId,
+        streaming: !!state?.selfStream || !!safe(() => ApplicationStreamingStore.getAnyStreamForUser(userId), null),
+        here: safe(() => SelectedChannelStore.getVoiceChannelId(), null) === channelId
+    };
+}
+
+function noteOf(userId: string): string {
+    const fromRelationships = safe(() => RelationshipStore.getNote?.(userId), undefined);
+    if (typeof fromRelationships === "string" && fromRelationships) return fromRelationships.trim();
+    const n = safe(() => NoteStore.getNote(userId), undefined);
+    return (typeof n === "string" ? n : n?.note ?? "").trim();
+}
 
 /** Make every Discord+ list re-read Discord's stores (refresh button, and once Discord finishes connecting). */
 export function refreshAll() {
@@ -267,7 +317,9 @@ function friendRow(id: string, kind: RelationKind): FriendRow | null {
         lastAt: Math.max(snowflakeTime(dm?.lastMessageId), dmId ? liveMessages.get(dmId)?.at ?? 0 : 0),
         liveAt: dmId ? liveMessages.get(dmId)?.at ?? 0 : 0,
         favorite: isFavorite(id),
-        ignored: safe(() => !!RelationshipStore.isIgnored?.(id), false)
+        ignored: safe(() => !!RelationshipStore.isIgnored?.(id), false),
+        voice: kind === "friend" ? friendVoice(id) : null,
+        note: kind === "blocked" ? "" : noteOf(id)
     };
 }
 

@@ -57,12 +57,14 @@ msgs.group1 = { _array: [{ content: "Are we all joining?", author: { id: "orbit"
 users.stranger = mkUser("stranger", "Support contact", null);
 channels["dm-stranger"] = { id: "dm-stranger", recipients: ["stranger"], lastMessageId: snow(now - 9e7), isMultiUserDM: () => false };
 channels.vc1 = { id: "vc1", name: "Night Shift", guild_id: "g1" };
+channels.vc2 = { id: "vc2", name: "Lounge", guild_id: "g1" };
 delete dms.moss; // a friend without an existing DM
 
 export const UserStore = Object.assign(new Store(), { getUser: id => users[id], getCurrentUser: () => users.me });
 export const RelationshipStore = Object.assign(new Store(), {
     getFriendIDs: () => people.map(p => p[0]), getNickname: () => undefined, isFriend: id => !!statuses[id],
     getMutableRelationships: () => new Map([["req1", 3], ["req2", 4]]), getBlockedIDs: () => [],
+    getNote: id => ({ orbit: "met at the speedrun meetup, likes Celeste", fern: "owes me a pizza" })[id],
     ignored: new Set(["moss", "stranger"]), getIgnoredIDs() { return [...this.ignored]; }, isIgnored(id) { return this.ignored.has(id); }
 });
 export const PresenceStore = Object.assign(new Store(), { getStatus: id => statuses[id] ?? "offline", getActivities: id => acts[id] ?? [], isMobileOnline: id => id === "juniper" });
@@ -75,6 +77,7 @@ export const MediaEngineStore = Object.assign(new Store(), { isSelfMute: () => m
 export const SelfPresenceStore = Object.assign(new Store(), { getStatus: () => "online" });
 export const SelectedChannelStore = Object.assign(new Store(), { voice: "vc1", getVoiceChannelId() { return this.voice; } });
 export const VoiceStateStore = Object.assign(new Store(), {
+    getVoiceStateForUser: id => ({ nova: { channelId: "vc1", selfStream: true }, pixel: { channelId: "vc1" }, basil: { channelId: "vc1" }, me: { channelId: "vc1" }, fern: { channelId: "vc2" }, kestrel: { channelId: "hidden" } })[id],
     getVoiceStatesForChannel: id => id !== "vc1" ? {} : {
         nova: { userId: "nova", selfStream: true },
         pixel: { userId: "pixel", selfMute: true },

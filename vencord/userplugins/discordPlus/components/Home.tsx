@@ -9,8 +9,8 @@ import {
     STATUS_LABEL, STATUS_ORDER, useClock, useStoreTick
 } from "../data";
 import {
-    acceptFriendRequest, blockUser, ignoreUser, openChannel, openNativeAddFriend, openDm, openProfile, relativeTime, removeFriend, removeFriendRequest,
-    unblockUser, unignoreUser
+    acceptFriendRequest, blockUser, ignoreUser, joinVoice, openChannel, openNativeAddFriend, openDm, openProfile, relativeTime, removeFriend, removeFriendRequest,
+    unblockUser, unignoreUser, watchStream
 } from "../discordApi";
 import { FriendFilter, settings, toggleFavorite } from "../settings";
 import { Avatar, useEntrance } from "./common";
@@ -32,8 +32,8 @@ const FILTERS: { id: FriendFilter; label: string; }[] = [
 
 const WEEK = 7 * 86400_000;
 
-function matches(row: { name: string; username?: string; activity?: string; preview: string; }, q: string) {
-    return !q || `${row.name} ${row.username ?? ""} ${row.activity ?? ""} ${row.preview}`.toLowerCase().includes(q);
+function matches(row: { name: string; username?: string; activity?: string; preview: string; note?: string; }, q: string) {
+    return !q || `${row.name} ${row.username ?? ""} ${row.activity ?? ""} ${row.preview} ${row.note ?? ""}`.toLowerCase().includes(q);
 }
 
 function sortRows(rows: FriendRow[], sort: Sort) {
@@ -91,13 +91,36 @@ function openFriendMenu(e: React.MouseEvent, row: FriendRow) {
     ));
 }
 
+/** The voice channel a friend is in, with Join / Watch. Buttons don't open the profile behind them. */
+function CardVoice({ row }: { row: FriendRow; }) {
+    const v = row.voice!;
+    const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+    return (
+        <div className={"dp-card-voice" + (v.here ? " dp-here" : "")} onClick={stop} onKeyDown={stop}>
+            <Icon name={v.streaming ? "screen" : "speaker"} size={14} />
+            <span className="dp-card-voice-place" title={v.place}>{v.place}</span>
+            {v.streaming && <span className="dp-live">LIVE</span>}
+            {v.here && <span className="dp-card-voice-here">You're here</span>}
+            {v.streaming && (v.here || v.joinable) && (
+                <button type="button" className="dp-voice-btn" title={`Watch ${row.name}'s stream`}
+                    onClick={() => watchStream(row.id, v.guildId, v.channelId)}>Watch</button>
+            )}
+            {!v.here && v.joinable && (
+                <button type="button" className="dp-voice-btn dp-join" title={`Join ${v.place}`}
+                    onClick={() => joinVoice(v.channelId)}>Join</button>
+            )}
+        </div>
+    );
+}
+
 function FriendCard({ row }: { row: FriendRow; }) {
-    const { messagePreviews } = settings.use(["messagePreviews"]);
+    const { messagePreviews, showVoiceOnCards, showNotes } = settings.use(["messagePreviews", "showVoiceOnCards", "showNotes"]);
+    const inVoice = showVoiceOnCards && !!row.voice;
     const subtitle = row.kind === "incoming" ? "Incoming friend request"
         : row.kind === "outgoing" ? "Outgoing friend request"
             : row.kind === "blocked" ? "Blocked"
                 : row.kind === "ignored" ? "Ignored"
-                : row.activity || STATUS_LABEL[row.status];
+                : row.activity || (inVoice ? "In voice" : STATUS_LABEL[row.status]);
     // The card opens the profile; the chat button underneath opens the conversation.
     const activate = () => openProfile(row.id);
     const chat = (e: React.MouseEvent | React.KeyboardEvent) => {
@@ -126,6 +149,12 @@ function FriendCard({ row }: { row: FriendRow; }) {
                         {row.favorite && <Icon name="star" size={12} className="dp-fav" />}
                     </span>
                     <span className="dp-card-sub">{subtitle}</span>
+                    {showNotes && row.note && (
+                        <span className="dp-card-note" title={`Your note: ${row.note}`}>
+                            <Icon name="note" size={11} />
+                            <span>{row.note}</span>
+                        </span>
+                    )}
                 </div>
                 <button
                     type="button"
@@ -136,6 +165,7 @@ function FriendCard({ row }: { row: FriendRow; }) {
                     <Icon name="more" size={16} />
                 </button>
             </div>
+            {inVoice && <CardVoice row={row} />}
             {(row.kind === "incoming" || row.kind === "outgoing") && (
                 <div className="dp-request-actions">
                     {row.kind === "incoming" && (

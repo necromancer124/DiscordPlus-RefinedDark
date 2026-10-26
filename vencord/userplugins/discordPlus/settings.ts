@@ -107,6 +107,16 @@ export const settings = definePluginSettings({
         description: "Show games / custom status on friend cards",
         default: true
     },
+    showVoiceOnCards: {
+        type: OptionType.BOOLEAN,
+        description: "Show which voice channel a friend is in, with Join / Watch buttons on their card",
+        default: true
+    },
+    showNotes: {
+        type: OptionType.BOOLEAN,
+        description: "Show your private Discord note about a friend on their card (and search by it)",
+        default: true
+    },
     defaultFilter: {
         type: OptionType.SELECT,
         description: "Friends filter selected when you open Discord+ home",

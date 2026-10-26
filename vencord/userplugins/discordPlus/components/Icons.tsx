@@ -28,6 +28,7 @@ const PATHS = {
     returnCall: "M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11",
     back: "M19 12H5M11 6l-6 6 6 6",
     download: "M12 4v11M7 10.5l5 5 5-5M5 20h14",
+    note: "M6 4h9l4 4v12H6zM14 4v5h5M9 13h7M9 16.5h5",
     refresh: "M19.5 9A8 8 0 0 0 5 7.5M4.5 4v4h4M4.5 15A8 8 0 0 0 19 16.5M19.5 20v-4h-4",
     classic: "M4 5h16v14H4zM9 5v14",
     plus: "M12 5v14M5 12h14",

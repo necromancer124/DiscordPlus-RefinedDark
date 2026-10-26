@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (branch claude/card-voice-notes)
+- **Voice on friend cards:** a friend in a voice channel gets a row on their card with the channel and server, a
+  **Join** button, and **Watch** (with LIVE) when they're streaming; "You're here" when you're in the same channel.
+  Setting **Show voice channels on friend cards** (on).
+- **Notes on friend cards:** your private Discord note about a friend shows under their status, and the search box
+  finds friends by their note. Setting **Show your notes on friend cards** (on).
+
 ## v1.15.0 — 2026-10-25
 - **Rejoin the call?** Discord doesn't reconnect you to voice after it closes. If it closes while you're in a call
   (restart, update, crash, quit) and opens again within 30 minutes, Discord+ offers **Rejoin** / **Not now**. While
