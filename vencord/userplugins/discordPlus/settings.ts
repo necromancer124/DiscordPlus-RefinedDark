@@ -5,6 +5,8 @@
 import { definePluginSettings } from "@api/Settings";
 import { OptionType } from "@utils/types";
 
+import { SelfCheck } from "./components/SelfCheck";
+
 export interface Placement {
     x: number;
     y: number;
@@ -15,6 +17,11 @@ export interface Placement {
 export type FriendFilter = "all" | "online" | "recent" | "unread" | "favorites" | "pending" | "blocked" | "ignored";
 
 export const settings = definePluginSettings({
+    // First in the settings window: is everything Discord+ needs still there after a Discord update?
+    selfCheck: {
+        type: OptionType.COMPONENT,
+        component: SelfCheck
+    },
     // ── Layout ──────────────────────────────────────────────────────────
     homeOverlay: {
         type: OptionType.BOOLEAN,

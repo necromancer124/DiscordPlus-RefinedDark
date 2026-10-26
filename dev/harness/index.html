@@ -30,6 +30,9 @@
   .page_x1 { flex: 1; background: var(--background-primary); padding: 20px; display: flex; }
   .page_x1 .main { flex: 1; } .nowPlayingColumn_x1 { width: 300px; border-left: 1px solid #3f4147; padding-left: 16px; color: var(--text-muted); }
   #mock-layer { position: fixed; z-index: 1002; }
+  .mock-modal { position: fixed; inset: 0; z-index: 1003; display: grid; place-items: center; background: rgb(0 0 0 / 70%); }
+  .mock-modal-box { width: 640px; max-height: 86vh; overflow: auto; padding: 20px 20px 4px; background: #1b1c24; border-radius: 12px; }
+  .mock-modal-title { margin-bottom: 14px; font: 600 20px system-ui, sans-serif; color: #f1f1f5; }
   .mock-menu { background: #111214; border-radius: 8px; padding: 6px; min-width: 190px; box-shadow: 0 8px 24px #000a; display: flex; flex-direction: column; }
   .mock-menu-item { all: unset; padding: 7px 9px; border-radius: 4px; font-size: 14px; color: #dbdee1; cursor: pointer; }
   .mock-menu-item:hover { background: #5865f2; color: #fff; }
@@ -122,6 +125,25 @@
       nav("Messages");
     } else if (scene === "call-list") {
       const call = q(".dp-call"); if (call) { call.style.width = "380px"; call.style.height = "700px"; call.style.top = "96px"; }
+    } else if (scene === "update") {
+      // A made-up newer release, so the update notice shows; its popup is opened.
+      window.__settings.callHidden = true;
+      const realFetch = window.fetch;
+      window.fetch = async (url, o) => String(url).includes("api.github.com")
+        ? new Response(JSON.stringify({ tag_name: "v9.0.0", html_url: "https://github.com/necromancer124/DiscordPlus-RefinedDark/releases" }), { status: 200 })
+        : realFetch(url, o);
+      await plugin.toolboxActions["Check for Discord+ updates"]();
+      await wait(200);
+      q(".dp-update-chip")?.click();
+    } else if (scene === "selfcheck") {
+      // The self-check as it appears in Discord+ settings (Discord's settings window is a stand-in here).
+      window.__settings.callHidden = true;
+      const { SelfCheck } = await import("/plugin/components/SelfCheck.js");
+      const modal = document.createElement("div");
+      modal.className = "mock-modal";
+      modal.innerHTML = '<div class="mock-modal-box"><div class="mock-modal-title">DiscordPlus</div><div class="mock-modal-body"></div></div>';
+      document.body.appendChild(modal);
+      window.ReactDOM.createRoot(modal.querySelector(".mock-modal-body")).render(window.React.createElement(SelfCheck));
     } else if (scene === "menu") {
       window.__settings.callHidden = true;
       const card = [...document.querySelectorAll(".dp-card")][1];

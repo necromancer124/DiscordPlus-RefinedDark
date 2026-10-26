@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (branch claude/self-check)
+- **Self-check** at the top of Discord+ settings (also in the Vencord toolbox): tests every part of Discord that
+  Discord+ relies on (what it reads, the actions it presses, the page layout it adjusts, what's running now) and
+  names the affected feature when something fails. **Copy report** copies only the results and versions.
+- New README screenshots (made-up people): voice rows and notes on cards, the Call menu, the update notice and the
+  self-check.
+
 ## v1.17.0 — 2026-10-26
 - **Call from the friend card menu (⋮ / right-click):** **Call** and **Video call** open your chat with that friend and
   press Discord's own Start Voice Call / Start Video Call button, so ringing works exactly as in Discord. With no chat

@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const out = join(here, "..", "..", "screenshots");
-const SCENES = ["home", "call-list", "pending", "messages", "menu"];
+const SCENES = ["home", "call-list", "pending", "messages", "menu", "update", "selfcheck"];
 const BROWSERS = [
     "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
     "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
