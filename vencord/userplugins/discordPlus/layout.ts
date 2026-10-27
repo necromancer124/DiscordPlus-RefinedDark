@@ -183,8 +183,65 @@ export function markNativeToolbar(on: boolean): HTMLElement | null {
     return bar;
 }
 
+export const CALLBAR_DEAFEN_CLASS = "dp-callbar-deafen";
+const CONTROL = 'button, [role="button"], [role="switch"]';
+const MIC_LABEL = /^(mute|unmute)$/i;
+const notOurs = (el: Element) => !el.closest(`#vc-discordplus-root, .${CALLBAR_DEAFEN_CLASS}`);
+const controlsIn = (el: Element) => [...el.querySelectorAll(CONTROL)].filter(notOurs);
+let deafenHost: HTMLElement | null = null;
+
+/**
+ * Discord's call-view bottom bar: the group holding its mic button (mic + its options arrow), found from the
+ * Disconnect button that is not in the bottom-left voice panel. Null when no call view is open.
+ */
+function findCallBarMic(): { group: HTMLElement; bar: HTMLElement; } | null {
+    const panel = document.querySelector(SEL.panels);
+    const leave = [...document.querySelectorAll<HTMLElement>('[aria-label*="disconnect" i], [aria-label*="leave call" i]')]
+        .find(el => notOurs(el) && !panel?.contains(el));
+    let bar = leave?.parentElement ?? null;
+    for (let i = 0; bar && bar !== document.body && i < 8; i++, bar = bar.parentElement) {
+        const mic = controlsIn(bar).find(el => MIC_LABEL.test(el.getAttribute("aria-label") ?? ""));
+        if (!mic) continue;
+        // The highest ancestor of the mic that holds at most the mic and its options arrow.
+        let group = mic as HTMLElement;
+        while (group.parentElement && group.parentElement !== bar && controlsIn(group.parentElement).length <= 2)
+            group = group.parentElement;
+        return { group, bar };
+    }
+    return null;
+}
+
+/** The pill's look, read from Discord's widest button group, which never shows a muted / on state. */
+const PILL_LOOK = ["backgroundColor", "border", "borderRadius", "boxShadow", "height"] as const;
+
+/**
+ * Place (or remove) the Deafen button's spot right after Discord's mic group in the call view. Discord's classes are
+ * not copied (they style pseudo-elements and children our button doesn't have); only the neighbouring pill's
+ * colours, border and height are, as inline styles. Returns the spot, or null.
+ */
+export function syncCallBarDeafen(on: boolean): HTMLElement | null {
+    const found = on ? findCallBarMic() : null;
+    if (!found) {
+        deafenHost?.remove();
+        return null;
+    }
+    const { group, bar } = found;
+    const host = deafenHost ??= document.createElement("div");
+    host.className = CALLBAR_DEAFEN_CLASS;
+    const pill = [...group.parentElement!.children]
+        .filter(el => el !== host && el !== group && bar.contains(el) && notOurs(el))
+        .sort((a, b) => controlsIn(b).length - controlsIn(a).length)[0];
+    if (pill && controlsIn(pill).length > 1) {
+        const look = getComputedStyle(pill);
+        for (const prop of PILL_LOOK) if (host.style[prop] !== look[prop]) host.style[prop] = look[prop];
+    }
+    if (group.nextElementSibling !== host) group.after(host);
+    return host;
+}
+
 /** Remove every trace of Discord+ from Discord's DOM. Called on plugin stop. */
 export function cleanupDom() {
+    syncCallBarDeafen(false);
     document.querySelectorAll(`.${PUSHED_CLASS}, .${DM_COLUMN_CLASS}, .${PANEL_HIDDEN_CLASS}, .${NATIVE_TOOLBAR_CLASS}`)
         .forEach(el => el.classList.remove(PUSHED_CLASS, DM_COLUMN_CLASS, PANEL_HIDDEN_CLASS, NATIVE_TOOLBAR_CLASS));
     [...document.body.classList].filter(c => c.startsWith("dp-")).forEach(c => document.body.classList.remove(c));

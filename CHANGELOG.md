@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.18.0 — 2026-10-27
+- **Deafen in the call view:** Discord's call view (the bottom bar with Mute, Camera, Share and Leave) gets a
+  **Deafen** button right after Mute. It uses Discord's own deafen, turns red while you're deafened, and takes its
+  colours and size from the buttons next to it. Setting **Add a Deafen button next to Mute** (on).
+
 ## v1.17.0 — 2026-10-26
 - **Call from the friend card menu (⋮ / right-click):** **Call** and **Video call** open your chat with that friend and
   press Discord's own Start Voice Call / Start Video Call button, so ringing works exactly as in Discord. With no chat

@@ -10,6 +10,7 @@ import { go, ROUTES } from "../discordApi";
 import { settings } from "../settings";
 import { notesSettingChanged } from "../notes";
 import { clearUpdate, startUpdateChecks, stopUpdateChecks } from "../updates";
+import { CallBarDeafen } from "./CallBarDeafen";
 import { CallManager } from "./CallManager";
 import { Header, HomePage } from "./Header";
 import { Home } from "./Home";
@@ -22,6 +23,7 @@ const SafeHeader = ErrorBoundary.wrap(Header, { noop: true });
 const SafeHome = ErrorBoundary.wrap(Home, { noop: true });
 const SafeDock = ErrorBoundary.wrap(UserDock, { noop: true });
 const SafeCall = ErrorBoundary.wrap(CallManager, { noop: true });
+const SafeCallBarDeafen = ErrorBoundary.wrap(CallBarDeafen, { noop: true });
 // Declared below; a function declaration is hoisted, so wrapping it here is fine.
 const SafeClassicBar = ErrorBoundary.wrap(ClassicBar, { noop: true });
 
@@ -92,7 +94,7 @@ function QuestChip() {
 export function App() {
     const s = settings.use([
         "homeOverlay", "globalHeader", "fullWidthDms", "floatingDock", "callManager", "hideNativeUserPanel",
-        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow", "animation", "animationSpeed", "checkUpdates", "showNotes"
+        "applyTheme", "accent", "reduceMotion", "showQuestChip", "hideDmColumn", "headerUserControls", "hideQuestPromo", "hideActiveNow", "animation", "animationSpeed", "checkUpdates", "showNotes", "callBarDeafen"
     ]);
     const layout = useLayout();
     const [page, setPage] = useState<HomePage>("friends");
@@ -197,6 +199,7 @@ export function App() {
             {onHome && classic && <SafeClassicBar onBack={() => setClassic(false)} />}
             {s.floatingDock && <SafeDock onMounted={setDockActive} />}
             {s.callManager && <SafeCall route={layout.route} forceShow={forceShowCall} />}
+            {s.callBarDeafen && <SafeCallBarDeafen />}
             {s.showQuestChip && <QuestChip />}
         </>
     );

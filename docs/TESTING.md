@@ -1,5 +1,10 @@
 # Testing and verification
 
+## v1.18.0 — Deafen in the call view (2026-10-27)
+Vencord's real `pnpm testTsc`: passes. **Real client:** the Deafen button appears after Mute in the call view's bottom
+bar, matches the buttons next to it and toggles deafen. (A first version copied Discord's button classes; their
+pseudo-elements drew a white shape and moved the icon, so only the neighbouring pill's colours and size are copied now.)
+
 ## v1.17.0 — call from the card menu (2026-10-26)
 Vencord's real `pnpm testTsc`: passes. Harness (stand-in DM header buttons): menu Message / Call / Video call / …;
 Call → DM opened, "Start Voice Call" pressed; Video call → "Start Video Call" pressed; friend without a chat → profile

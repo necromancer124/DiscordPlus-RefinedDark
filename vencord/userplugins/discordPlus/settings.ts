@@ -72,6 +72,11 @@ export const settings = definePluginSettings({
         description: "Show the floating voice-call manager when you leave an active call's page",
         default: true
     },
+    callBarDeafen: {
+        type: OptionType.BOOLEAN,
+        description: "Add a Deafen button next to Mute in the bottom bar of Discord's call view",
+        default: true
+    },
     hideNativeUserPanel: {
         type: OptionType.BOOLEAN,
         description: "With the floating dock on, also hide Discord's bottom-left user/voice panel",

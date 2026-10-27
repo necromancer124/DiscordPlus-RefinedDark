@@ -286,6 +286,36 @@ body:has(:is([class^="layers_"], [class*=" layers_"]) > :is([class^="layer_"], [
 .dp-icon-btn.dp-active { color: var(--dp-accent); background: var(--dp-accent-soft); }
 .dp-icon-btn.dp-danger { color: var(--dp-red); }
 
+/* Deafen button in Discord's call-view bottom bar (CallBarDeafen.tsx). Colours, border and height of the pill are
+   copied inline from Discord's neighbouring button group (layout.ts); these are the fallbacks. */
+.dp-callbar-deafen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    box-sizing: border-box;
+    height: 48px;
+    padding: 0 4px;
+    border-radius: 12px;
+    background: var(--background-base-lower, rgb(0 0 0 / 40%));
+}
+.dp-callbar-deafen-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    color: var(--interactive-normal, #dbdee1);
+    cursor: pointer;
+}
+.dp-callbar-deafen-btn:hover { background-color: rgb(255 255 255 / 8%); color: var(--interactive-hover, #fff); }
+.dp-callbar-deafen-btn:focus-visible { outline: 2px solid var(--dp-accent); }
+.dp-callbar-deafen-btn.dp-on { color: var(--dp-red); }
+.dp-callbar-deafen-icon { display: block; flex: none; width: 20px; height: 20px; }
+
 .dp-muted { color: var(--dp-muted); font-size: 13px; }
 
 .dp-avatar {
