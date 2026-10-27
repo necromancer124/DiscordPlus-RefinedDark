@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.21.1 — 2026-10-27
+- **Friend cards are as tall as their own content.** A card with a voice channel row or a note no longer stretches
+  every card next to it; only that card is taller.
+
 ## v1.21.0 — 2026-10-27
 - **Favorites tab** in the header, after Friends: your favorite friends, always, online first, with the same cards
   and menus as the Friends page. The header search filters it too.

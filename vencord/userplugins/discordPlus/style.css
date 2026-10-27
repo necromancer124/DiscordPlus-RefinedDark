@@ -656,7 +656,8 @@ body:has(:is([class^="layers_"], [class*=" layers_"]) > :is([class^="layer_"], [
 
 .dp-section-title { margin: 22px 0 11px; font-size: 13px; font-weight: 600; color: var(--dp-secondary); }
 
-.dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr)); gap: 11px; }
+/* align-items: start: a card is as tall as its own content (a voice row makes only that card taller), not the row's. */
+.dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr)); align-items: start; gap: 11px; }
 .dp-compact .dp-grid { grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); gap: 8px; }
 
 .dp-card {

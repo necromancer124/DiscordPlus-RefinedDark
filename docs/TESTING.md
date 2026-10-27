@@ -1,5 +1,8 @@
 # Testing and verification
 
+## v1.21.1 — card heights (2026-10-27)
+**Real client:** cards next to a friend in a voice channel keep their own height (confirmed by the user).
+
 ## v1.21.0 — Favorites tab, header gap (2026-10-27)
 Vencord's real `pnpm testTsc`: passes. **Real client:** the gap under the header is gone and the Favorites tab shows
 the favorite friends (confirmed by the user).
