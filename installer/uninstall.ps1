@@ -72,9 +72,11 @@ function Remove-Launcher {
         Remove-Item -Force $state.pinBackup
         Write-Ok "Taskbar: restored the original Discord pin"
     }
-    foreach ($f in @("launcher.ps1", "DiscordPlus.vbs", "vencord-loader.asar", "launcher.log")) {
+    foreach ($f in @("launcher.ps1", "DiscordPlus.vbs", "vencord-loader.asar", "launcher.log", "update.log")) {
         Remove-Item -Force (Join-Path $StateDir $f) -ErrorAction SilentlyContinue
     }
+    # Releases the launcher downloaded (automatic updates).
+    Remove-Item -Recurse -Force (Join-Path $StateDir "updates") -ErrorAction SilentlyContinue
     Write-Ok "Removed the Discord+ shortcuts, login check and launcher"
 }
 

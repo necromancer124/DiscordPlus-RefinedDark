@@ -4,7 +4,8 @@
  *
  * The only request Discord+ makes outside Discord: GitHub's public releases API, no account or token
  * (Vencord's CSP already allows api.github.com, it checks its own updates there). Once shortly after start,
- * then every 6 hours; off with the "Check for updates" setting. It only tells you; installing stays INSTALL.bat.
+ * then every 6 hours; off with the "Check for updates" setting. It only tells you; installing is INSTALL.bat or,
+ * with "Install updates automatically", the Discord+ launcher (installer/launcher.ps1) the next time it starts Discord.
  */
 import { showToast } from "@webpack/common";
 

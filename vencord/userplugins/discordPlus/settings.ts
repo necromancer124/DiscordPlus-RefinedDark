@@ -169,6 +169,12 @@ export const settings = definePluginSettings({
         description: "Check GitHub for a newer Discord+ and show it in the header (asks GitHub's public releases page every 6 hours, no account)",
         default: true
     },
+    // Read by the Discord+ launcher (installer/launcher.ps1) from Vencord's settings.json, not by the plugin.
+    autoUpdate: {
+        type: OptionType.BOOLEAN,
+        description: "Install new Discord+ versions automatically: the Discord+ shortcut / taskbar pin and the login check download and build them before Discord starts",
+        default: true
+    },
     reduceMotion: {
         type: OptionType.BOOLEAN,
         description: "Turn off Discord+ animations (system reduced-motion is always respected)",

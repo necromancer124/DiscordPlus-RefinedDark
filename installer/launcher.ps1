@@ -19,7 +19,10 @@
     A copy of Vencord's loader is kept in %LOCALAPPDATA%\DiscordPlus\vencord-loader.asar, so a repair is
     possible even after Discord has deleted every older (patched) version folder, and in Discord installs that
     Vencord's installer never touched (e.g. a per-user copy under C:\ProgramData\<user>\Discord).
-    Log: %LOCALAPPDATA%\DiscordPlus\launcher.log
+    Before all of that (step 0), a newer Discord+ release on GitHub is downloaded and built with its own
+    installer (install.ps1 -SkipInject -KeepChoices), so Discord starts with it. Off with the plugin setting
+    "Install updates automatically"; skipped when Discord is already open (the next start updates).
+    Log: %LOCALAPPDATA%\DiscordPlus\launcher.log (installer output of the last update: update.log)
 #>
 param(
     [ValidateSet("Discord", "DiscordPTB", "DiscordCanary")]
@@ -111,6 +114,85 @@ function Start-Discord {
     if ($Testing) { Write-Log "would start $Flavor"; return }
     if (Test-Path $Updater) { Start-Process -FilePath $Updater -ArgumentList "--processStart", "$Flavor.exe" }
     else { Write-Log "Update.exe not found at $Updater" }
+}
+
+# -- 0. Discord+ update --------------------------------------------------------------
+$Repo = "necromancer124/DiscordPlus-RefinedDark"
+$StateFile = Join-Path $StateDir "install-state.json"
+$UpdateDir = Join-Path $StateDir "updates"
+$UpdateLog = Join-Path $StateDir "update.log"
+
+function ConvertTo-Version([string]$text) {
+    try { return [version]$text } catch { return [version]"0.0" }
+}
+
+# The plugin setting "Install updates automatically" lives in Vencord's settings; unset means on.
+function Test-AutoUpdateOn {
+    try {
+        $plugin = (Get-Content (Join-Path $env:APPDATA "Vencord\settings\settings.json") -Raw | ConvertFrom-Json).plugins.DiscordPlus
+        return $plugin.enabled -ne $false -and $plugin.autoUpdate -ne $false
+    } catch { return $true }
+}
+
+# Download and build the newest release if it's newer than the installed one. True when Discord+ was updated.
+function Update-DiscordPlus {
+    if ($Testing -or -not (Test-Path $StateFile) -or -not (Test-AutoUpdateOn)) { return $false }
+    $state = try { Get-Content $StateFile -Raw | ConvertFrom-Json } catch { $null }
+    if (-not $state -or -not $state.pluginVersion) { return $false }
+    # One update at a time: the login check and a shortcut can start together.
+    $lock = New-Object System.Threading.Mutex($false, "Local\DiscordPlusUpdate")
+    if (-not $lock.WaitOne(0)) { $lock.Dispose(); return $false }
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+        $release = Invoke-RestMethod "https://api.github.com/repos/$Repo/releases/latest" -Headers @{ "User-Agent" = "DiscordPlus-launcher" } -TimeoutSec 10
+        $version = "$($release.tag_name)".TrimStart("v")
+        if ((ConvertTo-Version $version) -le (ConvertTo-Version $state.pluginVersion)) { return $false }
+
+        # Only the full release zip of this repository, from GitHub's own download address.
+        $name = "DiscordPlus-RefinedDark-$version"
+        $asset = @($release.assets) | Where-Object { $_.name -eq "$name.zip" } | Select-Object -First 1
+        $url = "$($asset.browser_download_url)"
+        if (-not $url.StartsWith("https://github.com/$Repo/releases/download/")) { Write-Log "update $version has no $name.zip"; return $false }
+
+        Write-Log "downloading Discord+ $version"
+        New-Item -ItemType Directory -Force -Path $UpdateDir | Out-Null
+        Get-ChildItem $UpdateDir -Force | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        $zip = Join-Path $UpdateDir "$name.zip"
+        Invoke-WebRequest $url -OutFile $zip -UseBasicParsing -TimeoutSec 120
+        Expand-Archive -Path $zip -DestinationPath $UpdateDir -Force
+        $installer = Join-Path $UpdateDir "$name\installer\install.ps1"
+        if (-not (Test-Path $installer)) { Write-Log "update $version has no installer in its zip"; return $false }
+
+        Write-Log "building Discord+ $version"
+        $installArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $installer, "-SkipInject", "-KeepChoices", "-NoStart")
+        if ($state.vencordDir) { $installArgs += @("-VencordDir", $state.vencordDir) }
+        & powershell.exe @installArgs *> $UpdateLog
+        if ($LASTEXITCODE -ne 0) { Write-Log "update $version failed (exit code $LASTEXITCODE); see update.log"; return $false }
+
+        # The new launcher is used from the next start on (this run already has the old one in memory).
+        Copy-Item -Path (Join-Path $UpdateDir "$name\installer\launcher.ps1"), (Join-Path $UpdateDir "$name\installer\DiscordPlus.vbs") -Destination $StateDir -Force
+        Remove-Item -Path $zip -Force -ErrorAction SilentlyContinue
+        Write-Log "updated Discord+ to $version"
+        return $true
+    } catch {
+        Write-Log "Discord+ update failed: $($_.Exception.Message)"
+        return $false
+    } finally {
+        $lock.ReleaseMutex()
+        $lock.Dispose()
+    }
+}
+
+# Opening Discord+ while Discord is already open only brings its window up: no update wait then.
+$wasOpen = [bool](Get-DiscordProcesses)
+if (-not ($Mode -eq "launch" -and $wasOpen) -and (Update-DiscordPlus) -and $Mode -eq "check") {
+    # At login Discord's own autostart may already run the old build: restart it, but only if it just started.
+    $running = @(Get-DiscordProcesses)
+    if ($running -and -not ($running | Where-Object { $_.StartTime -lt (Get-Date).AddMinutes(-5) })) {
+        Write-Log "restarting Discord to load the new Discord+"
+        Stop-Discord
+        Start-Discord
+    }
 }
 
 # -- 1. Before starting ------------------------------------------------------------

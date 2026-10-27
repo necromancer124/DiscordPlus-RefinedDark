@@ -402,6 +402,18 @@ if ($injected -and -not $SkipInject -and -not $NoLauncher) {
     }
 }
 
+# Shortcuts, pin and login check weren't touched this run (-SkipInject, -NoLauncher, or the automatic update):
+# keep them recorded, otherwise UNINSTALL.bat and -KeepChoices lose track of them.
+$launcherRan = $injected -and -not $SkipInject -and -not $NoLauncher
+$discordRoot = if ($primary) { $primary.Root } else { $null }
+if (-not $launcherRan -and $state) {
+    $launcherShortcuts = @($state.launcherShortcuts | Where-Object { $_ })
+    $launcherRunValues = @($state.launcherRunValues | Where-Object { $_ })
+    $pinPath = $state.pinPath
+    $pinBackup = $state.pinBackup
+    $discordRoot = $state.discordRoot
+}
+
 # Installs an earlier run patched stay recorded.
 if ($state -and $state.launcherPatchedRoots) {
     $launcherPatchedRoots = @(@($state.launcherPatchedRoots) + $launcherPatchedRoots | Where-Object { $_ } | Select-Object -Unique)
@@ -414,13 +426,13 @@ New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
     clonedByInstaller = $clonedByUs
     injected          = $injected
     pluginPath        = $pluginTarget
-    pluginVersion     = "1.18.0"
+    pluginVersion     = "1.19.0"
     launcherShortcuts = $launcherShortcuts
     launcherRunValues = $launcherRunValues
     launcherPatchedRoots = $launcherPatchedRoots
     pinPath           = $pinPath
     pinBackup         = $pinBackup
-    discordRoot       = if ($primary) { $primary.Root } else { $null }
+    discordRoot       = $discordRoot
     installedAt       = (Get-Date).ToString("s")
 } | ConvertTo-Json | Set-Content -Path $StateFile -Encoding UTF8
 

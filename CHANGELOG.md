@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.19.0 — 2026-10-27
+- **Automatic updates:** when a new Discord+ release is out, the Discord+ taskbar pin / shortcut downloads it from
+  GitHub and builds it before Discord starts (a few seconds), so Discord opens with the new version. The login check
+  does the same and restarts Discord only if it had just started. Opening Discord+ while Discord is already open
+  doesn't wait; the next start updates. Setting **Install updates automatically** (on); log in `launcher.log`.
+- The update chip in the header says how the update arrives.
+- **Installer:** a run that skips the shortcut step (`-SkipInject`, `-NoLauncher`) no longer forgets the shortcuts,
+  taskbar pin and login check of the last install, so `UNINSTALL.bat` and `-KeepChoices` still know about them.
+- `UNINSTALL.bat` also removes downloaded updates.
+
 ## v1.18.0 — 2026-10-27
 - **Deafen in the call view:** Discord's call view (the bottom bar with Mute, Camera, Share and Leave) gets a
   **Deafen** button right after Mute. It uses Discord's own deafen, turns red while you're deafened, and takes its

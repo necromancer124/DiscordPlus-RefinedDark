@@ -67,7 +67,10 @@ extract it, and continue at step 2. Or clone this repository.
    - **start Discord again with Discord+ enabled** (the same Stable / PTB / Canary that was running).
 3. That's it. Discord+ is in **Settings → Vencord → Plugins → DiscordPlus** if you want to change anything.
 
-To **update** after changing the plugin, run `INSTALL.bat` again; it re-copies and rebuilds.
+**Updates install themselves.** When a new release is out, the Discord+ taskbar pin / shortcut and the login check
+download it from GitHub and build it before Discord starts (a few seconds; log: `%LOCALAPPDATA%\DiscordPlus\launcher.log`).
+Turn it off with the setting **Install updates automatically**. To update by hand, or after changing the plugin,
+run `INSTALL.bat` again; it re-copies and rebuilds.
 If a Discord update removes Vencord, run `INSTALL.bat -Reinject`.
 Options: `-Yes` (answer every question with yes), `-UpdateVencord` (pull the latest Vencord first), `-SkipInject` (build only), `-NoStart` (don't start Discord at the end), `-NoLauncher` (no shortcuts / login check), `-VencordDir <path>` (use your own checkout).
 If no Discord install has Vencord any more, `INSTALL.bat` injects it again by itself.
@@ -120,6 +123,7 @@ All in **Settings → Vencord → Plugins → DiscordPlus**, or the sliders icon
 | Quests shortcut chip | off |
 | Animations · animation speed | Wave · Normal (also Pop, Slide, Flip, Fade, Off) |
 | Check for updates (GitHub releases, shown in the header) | on |
+| Install updates automatically (Discord+ launcher) | on |
 | Offer to rejoin a call after Discord restarts | on |
 | Reduce motion | off (system setting always respected) |
 

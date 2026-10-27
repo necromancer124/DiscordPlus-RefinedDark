@@ -140,7 +140,7 @@ function HeaderUser() {
 /** A newer Discord+ on GitHub: a small chip with a popup that says how to update. */
 function UpdateChip() {
     useStoreTick(() => [UpdateStore]);
-    const { checkUpdates, dismissedUpdate } = settings.use(["checkUpdates", "dismissedUpdate"]);
+    const { checkUpdates, dismissedUpdate, autoUpdate } = settings.use(["checkUpdates", "dismissedUpdate", "autoUpdate"]);
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -172,10 +172,17 @@ function UpdateChip() {
             {open && (
                 <div className="dp-update-pop" role="dialog" aria-label="Discord+ update">
                     <strong>Discord+ v{info.version} is out</strong>
-                    <p>
-                        You have v{VERSION}. To update, run <code>INSTALL.bat -KeepChoices</code> in your Discord+ folder,
-                        or download the new release first.
-                    </p>
+                    {autoUpdate ? (
+                        <p>
+                            You have v{VERSION}. It installs itself: close Discord completely (tray icon → Quit) and open it
+                            again with the Discord+ shortcut or taskbar pin. Or run <code>INSTALL.bat -KeepChoices</code>.
+                        </p>
+                    ) : (
+                        <p>
+                            You have v{VERSION}. To update, run <code>INSTALL.bat -KeepChoices</code> in your Discord+ folder,
+                            or download the new release first.
+                        </p>
+                    )}
                     <div className="dp-update-actions">
                         <a className="dp-update-primary" href={info.url} target="_blank" rel="noreferrer noopener">What's new</a>
                         <button type="button" onClick={() => copyWithToast("INSTALL.bat -KeepChoices", "Command copied")}>Copy command</button>

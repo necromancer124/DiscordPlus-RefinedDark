@@ -1,5 +1,10 @@
 # Testing and verification
 
+## v1.19.0 — automatic updates (2026-10-27)
+Vencord's real `pnpm testTsc`: passes; the three installer scripts parse. **Real PC:** the new launcher's login check
+with v1.17.0 recorded downloaded the v1.18.0 release zip, built it with `install.ps1 -SkipInject -KeepChoices` in 8s,
+recorded 1.18.0 and left the running Discord (open for hours) alone. Second run: up to date, nothing downloaded.
+
 ## v1.18.0 — Deafen in the call view (2026-10-27)
 Vencord's real `pnpm testTsc`: passes. **Real client:** the Deafen button appears after Mute in the call view's bottom
 bar, matches the buttons next to it and toggles deafen. (A first version copied Discord's button classes; their
