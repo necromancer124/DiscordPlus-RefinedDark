@@ -136,7 +136,7 @@ export function App() {
     // because Discord re-creates those elements and rewrites their className when it re-renders.
     useEffect(() => {
         const apply = () => {
-            setPushed(pushNative);
+            setPushed(pushNative, layout.top + HEADER_HEIGHT);
             setDmColumnHidden(hideDmColumn || (s.fullWidthDms && dockActive && layout.kind === "dm"));
             tidyPanels(showHeader && s.headerUserControls, s.hideQuestPromo);
         };
@@ -144,11 +144,11 @@ export function App() {
         const t = setInterval(apply, 500);
         return () => {
             clearInterval(t);
-            setPushed(false);
+            setPushed(false, 0);
             setDmColumnHidden(false);
             tidyPanels(false, false);
         };
-    }, [pushNative, hideDmColumn, s.fullWidthDms, dockActive, layout.kind, layout.route, showHeader, s.headerUserControls, s.hideQuestPromo]);
+    }, [pushNative, hideDmColumn, s.fullWidthDms, dockActive, layout.kind, layout.route, layout.top, showHeader, s.headerUserControls, s.hideQuestPromo]);
 
     useEffect(() => {
         // With "Apply theme" off the accent comes from the user's theme (--brand-500, see style.css).

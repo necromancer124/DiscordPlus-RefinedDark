@@ -25,6 +25,8 @@ export const QUEST_PROMO_SELECTOR = `${cls("panels", "section")
 export const PIP_SELECTOR = cls("pictureInPictureWindow");
 
 export const PUSHED_CLASS = "dp-pushed";
+/** How far a pushed part moves down (set per part by setPushed). */
+const PUSH_VAR = "--dp-push";
 export const DM_COLUMN_CLASS = "dp-dm-column";
 export const PANEL_HIDDEN_CLASS = "dp-panel-hidden";
 export const NATIVE_TOOLBAR_CLASS = "dp-native-toolbar";
@@ -114,13 +116,26 @@ export function measure(): LayoutInfo {
 /**
  * Apply or remove the header push. Idempotent and cheap, so it is re-applied periodically:
  * Discord re-renders its elements (and their className) at any time.
+ *
+ * Each part is moved down only as far as its top sits above the header's bottom edge: in current Discord the
+ * sidebar and page already start below the top of the region (the header's top), so a fixed header-height
+ * push left a gap under the header.
  */
-export function setPushed(on: boolean) {
+export function setPushed(on: boolean, headerBottom: number) {
     const targets = on ? findPushTargets() : [];
-    document.querySelectorAll(`.${PUSHED_CLASS}`).forEach(el => {
-        if (!targets.includes(el as HTMLElement)) el.classList.remove(PUSHED_CLASS);
+    document.querySelectorAll<HTMLElement>(`.${PUSHED_CLASS}`).forEach(el => {
+        if (!targets.includes(el)) {
+            el.classList.remove(PUSHED_CLASS);
+            el.style.removeProperty(PUSH_VAR);
+        }
     });
-    targets.forEach(el => el.classList.add(PUSHED_CLASS));
+    for (const el of targets) {
+        el.classList.add(PUSHED_CLASS);
+        // An element's own padding doesn't move its top edge, so this stays the same once it's pushed.
+        const top = el.getBoundingClientRect().top;
+        const push = `${Math.max(0, Math.round(headerBottom - top))}px`;
+        if (el.style.getPropertyValue(PUSH_VAR) !== push) el.style.setProperty(PUSH_VAR, push);
+    }
     return targets.length > 0;
 }
 
@@ -242,6 +257,7 @@ export function syncCallBarDeafen(on: boolean): HTMLElement | null {
 /** Remove every trace of Discord+ from Discord's DOM. Called on plugin stop. */
 export function cleanupDom() {
     syncCallBarDeafen(false);
+    document.querySelectorAll<HTMLElement>(`.${PUSHED_CLASS}`).forEach(el => el.style.removeProperty(PUSH_VAR));
     document.querySelectorAll(`.${PUSHED_CLASS}, .${DM_COLUMN_CLASS}, .${PANEL_HIDDEN_CLASS}, .${NATIVE_TOOLBAR_CLASS}`)
         .forEach(el => el.classList.remove(PUSHED_CLASS, DM_COLUMN_CLASS, PANEL_HIDDEN_CLASS, NATIVE_TOOLBAR_CLASS));
     [...document.body.classList].filter(c => c.startsWith("dp-")).forEach(c => document.body.classList.remove(c));

@@ -22,7 +22,7 @@ import { VERSION } from "../version";
 import { Avatar } from "./common";
 import { Icon, IconName } from "./Icons";
 
-export type HomePage = "friends" | "messages";
+export type HomePage = "friends" | "favorites" | "messages";
 
 interface NavItem {
     id: string;
@@ -34,6 +34,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
     { id: "friends", label: "Friends", icon: "friends", page: "friends" },
+    { id: "favorites", label: "Favorites", icon: "star", page: "favorites" },
     { id: "messages", label: "Messages", icon: "message", page: "messages" },
     { id: "requests", label: "Message Requests", icon: "inbox", route: ROUTES.requests },
     { id: "nitro", label: "Nitro", icon: "nitro", route: ROUTES.nitro },

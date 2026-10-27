@@ -318,6 +318,54 @@ function FriendsView({ query, showClassic }: { query: string; showClassic(): voi
     );
 }
 
+/** The header's Favorites tab: your favorite friends, always, online first. */
+function FavoritesView({ query }: { query: string; }) {
+    const tick = useStoreTick(friendStores);
+    const { density, favorites, showActivity } = settings.use(["density", "favorites", "showActivity"]);
+    useClock(60_000);
+    const data = useMemo(readRelationships, [tick, favorites, showActivity]);
+    const q = query.trim().toLowerCase();
+    const all = data.friends.filter(r => r.favorite);
+    const rows = sortRows(all.filter(r => matches(r, q)), "smart");
+    const pageRef = useRef<HTMLDivElement>(null);
+    useEntrance(pageRef, [rows.length > 0]);
+    const sections = [
+        { title: "Online", rows: rows.filter(r => r.status !== "offline") },
+        { title: "Offline", rows: rows.filter(r => r.status === "offline") }
+    ];
+
+    return (
+        <div ref={pageRef} className="dp-page">
+            <div className="dp-page-head" data-dp-enter="">
+                <Icon name="star" size={22} />
+                <h1>Favorites</h1>
+                <span className="dp-muted">{all.length} {all.length === 1 ? "favorite" : "favorites"}</span>
+                <button type="button" className="dp-icon-btn dp-refresh" title="Refresh" aria-label="Refresh" onClick={refreshAll}>
+                    <Icon name="refresh" size={17} />
+                </button>
+            </div>
+
+            {data.error && <p className="dp-empty">{data.error}</p>}
+            {!data.error && !rows.length && (
+                <p className="dp-empty">
+                    {q ? `No favorite matches “${query}”.` : "No favorites yet. Right-click a friend (or use ⋮ on their card) and choose Add to favorites."}
+                </p>
+            )}
+
+            <div className={"dp-sections" + (density === "compact" ? " dp-compact" : "")}>
+                {sections.filter(s => s.rows.length).map(s => (
+                    <section key={s.title} aria-label={s.title}>
+                        <h2 className="dp-section-title" data-dp-enter="">{s.title} — {s.rows.length}</h2>
+                        <div className="dp-grid">
+                            {s.rows.map(r => <FriendCard key={r.id} row={r} />)}
+                        </div>
+                    </section>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 function ConversationItem({ row }: { row: ConversationRow; }) {
     return (
         <button type="button" data-dp-enter="" className={"dp-row" + (row.unread ? " dp-has-unread" : "")} onClick={() => openChannel(row.id)}>
@@ -371,7 +419,9 @@ export function Home({ left, top, page, query, showClassic }: {
     return (
         <main className="dp-home" style={{ left, top }} aria-label="Discord+ home">
             <div className="dp-home-inner">
-                {page === "messages" ? <MessagesView query={query} /> : <FriendsView query={query} showClassic={showClassic} />}
+                {page === "messages" ? <MessagesView query={query} />
+                    : page === "favorites" ? <FavoritesView query={query} />
+                        : <FriendsView query={query} showClassic={showClassic} />}
             </div>
         </main>
     );

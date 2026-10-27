@@ -1,5 +1,9 @@
 # Testing and verification
 
+## v1.21.0 — Favorites tab, header gap (2026-10-27)
+Vencord's real `pnpm testTsc`: passes. **Real client:** the gap under the header is gone and the Favorites tab shows
+the favorite friends (confirmed by the user).
+
 ## v1.20.0 — Edit Friend Nickname (2026-10-27)
 Vencord's real `pnpm testTsc`: passes. **Real client:** Edit Friend Nickname from the profile's ⋯ menu saves the
 nickname and Discord shows it (confirmed by the user).

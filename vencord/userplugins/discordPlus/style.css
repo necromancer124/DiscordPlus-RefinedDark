@@ -154,7 +154,8 @@ body.dp-theme :is(button, [role="button"], input, textarea) {
 
 /* ── 3. Native layout switches (each one is a class Discord+ adds and removes) ── */
 .dp-pushed {
-    padding-top: var(--dp-header-h) !important;
+    /* --dp-push: measured per part in layout.ts (setPushed); the header height until it is. */
+    padding-top: var(--dp-push, var(--dp-header-h)) !important;
     box-sizing: border-box !important;
 }
 

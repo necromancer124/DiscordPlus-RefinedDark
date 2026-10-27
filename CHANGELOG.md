@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.21.0 — 2026-10-27
+- **Favorites tab** in the header, after Friends: your favorite friends, always, online first, with the same cards
+  and menus as the Friends page. The header search filters it too.
+- **Fixed: gap under the header.** Discord's sidebar and page were moved down by the full header height although
+  current Discord already starts them lower, which left an empty band. Each part now moves only as far as needed.
+
 ## v1.20.0 — 2026-10-27
 - **Edit Friend Nickname is back:** Discord still shows a friend's nickname in place of their name, but no longer
   offers a way to set one. Discord+ adds **Edit Friend Nickname** to the right-click menu on a friend (chat, member
