@@ -1,5 +1,9 @@
 # Testing and verification
 
+## v1.20.0 — Edit Friend Nickname (2026-10-27)
+Vencord's real `pnpm testTsc`: passes. **Real client:** Edit Friend Nickname from the profile's ⋯ menu saves the
+nickname and Discord shows it (confirmed by the user).
+
 ## v1.19.0 — automatic updates (2026-10-27)
 Vencord's real `pnpm testTsc`: passes; the three installer scripts parse. **Real PC:** the new launcher's login check
 with v1.17.0 recorded downloaded the v1.18.0 release zip, built it with `install.ps1 -SkipInject -KeepChoices` in 8s,

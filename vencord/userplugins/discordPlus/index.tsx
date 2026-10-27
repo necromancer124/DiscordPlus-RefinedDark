@@ -1,15 +1,17 @@
 /*
- * Discord+ Refined Dark — Vencord userplugin, v1.19
+ * Discord+ Refined Dark — Vencord userplugin, v1.20
  * SPDX-License-Identifier: CC-BY-NC-4.0
  *
  * "Just Discord, but substantially better." See MASTER_PROMPT.md / DESIGN.md in the project root.
  *
  * Safety rules this plugin follows:
  * - No webpack patches: it only reads Discord's stores and calls the same action creators
- *   Discord's own buttons use (open DM, profile, mute, deafen, disconnect, navigation).
+ *   Discord's own buttons use (open DM, profile, mute, deafen, disconnect, navigation). Menu items in Discord's
+ *   own user menus go through Vencord's context menu API (Edit Friend Nickname, nicknames.tsx).
  * - No tokens, no message sending, no data export. Requests: one read-only "your notes" request to Discord through
  *   Discord's own REST client after start (notes.ts, setting "Show your notes on friend cards"), and the optional
- *   update check against GitHub's public releases API (updates.ts, setting "Check for updates").
+ *   update check against GitHub's public releases API (updates.ts, setting "Check for updates"). The one change it
+ *   makes to your account is a friend nickname you save yourself, with the request Discord's own editor sends.
  * - Every change to Discord's DOM is a `dp-*` class; stop() removes all of them.
  *
  * APIs were checked against Vencord source at commit 32c9063 (2026-10-14).
@@ -23,6 +25,7 @@ import { App } from "./components/App";
 import { clearLiveMessages, recordLiveMessage, refreshAll } from "./data";
 import { cleanupDom } from "./layout";
 import { go, ROUTES } from "./discordApi";
+import { nicknameMenuPatch } from "./nicknames";
 import { onNoteUpdate, startNotes, stopNotes } from "./notes";
 import { onVoiceChannelSelect, startRejoin, stopRejoin } from "./rejoin";
 import { settings } from "./settings";
@@ -60,6 +63,13 @@ export default definePlugin({
         VOICE_CHANNEL_SELECT({ channelId }: { channelId?: string | null; }) { onVoiceChannelSelect(channelId); },
         // You edited a note: keep the friend cards' copy current (notes.ts).
         USER_NOTE_UPDATE({ id, note }: { id?: string; note?: string | null; }) { onNoteUpdate(id, note); }
+    },
+
+    // "Edit Friend Nickname": right-click a friend anywhere, or the ⋯ menu on their profile.
+    contextMenus: {
+        "user-context": nicknameMenuPatch,
+        "user-profile-actions": nicknameMenuPatch,
+        "user-profile-overflow-menu": nicknameMenuPatch
     },
 
     toolboxActions: {

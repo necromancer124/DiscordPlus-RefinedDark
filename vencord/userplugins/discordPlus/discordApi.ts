@@ -11,7 +11,7 @@
  */
 import { openUserProfile } from "@utils/discord";
 import { findByPropsLazy, findStoreLazy } from "@webpack";
-import { Alerts, ApplicationStreamingStore, ChannelStore, NavigationRouter, SettingsRouter, showToast } from "@webpack/common";
+import { Alerts, ApplicationStreamingStore, ChannelStore, NavigationRouter, RestAPI, SettingsRouter, showToast } from "@webpack/common";
 
 import { cls, findNativeAddFriendTab, PIP_SELECTOR } from "./layout";
 
@@ -147,6 +147,19 @@ export const ignoreUser = (userId: string, name: string) =>
     relationshipAction("ignore the user", userId, ignoreCall("ignoreUser", userId, name));
 export const unignoreUser = (userId: string, name: string) =>
     relationshipAction("unignore the user", userId, ignoreCall("unignoreUser", userId, name));
+
+/**
+ * Discord's friend nickname (null removes it): Discord's own updateRelationship when this version has it,
+ * otherwise the request it sends (PATCH the relationship's nickname). Discord's store updates from the reply.
+ */
+export async function setFriendNickname(userId: string, nickname: string | null) {
+    const update = (RelationshipActions as { updateRelationship?(userId: string, nickname: string | null): unknown; }).updateRelationship;
+    if (typeof update === "function") {
+        await update.call(RelationshipActions, userId, nickname);
+        return;
+    }
+    await RestAPI.patch({ url: `/users/@me/relationships/${userId}`, body: { nickname } });
+}
 
 // Streaming: watching uses Discord's stream action creator when present; navigation always follows.
 const StreamActions: {

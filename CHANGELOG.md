@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.20.0 — 2026-10-27
+- **Edit Friend Nickname is back:** Discord still shows a friend's nickname in place of their name, but no longer
+  offers a way to set one. Discord+ adds **Edit Friend Nickname** to the right-click menu on a friend (chat, member
+  list, DMs, calls), the ⋯ menu on their profile and the Discord+ friend card menu (with **Remove Friend
+  Nickname**). It saves through Discord's own friend nickname, so only you see it and it follows your account.
+
 ## v1.19.0 — 2026-10-27
 - **Automatic updates:** when a new Discord+ release is out, the Discord+ taskbar pin / shortcut downloads it from
   GitHub and builds it before Discord starts (a few seconds), so Discord opens with the new version. The login check

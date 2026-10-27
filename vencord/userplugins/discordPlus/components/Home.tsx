@@ -12,6 +12,7 @@ import {
     acceptFriendRequest, blockUser, ignoreUser, joinVoice, openChannel, openNativeAddFriend, openDm, openProfile, relativeTime, removeFriend, removeFriendRequest,
     startCall, unblockUser, unignoreUser, watchStream
 } from "../discordApi";
+import { editFriendNickname, hasFriendNickname, removeFriendNickname } from "../nicknames";
 import { FriendFilter, settings, toggleFavorite } from "../settings";
 import { Avatar, useEntrance } from "./common";
 import type { HomePage } from "./Header";
@@ -65,13 +66,17 @@ function openFriendMenu(e: React.MouseEvent, row: FriendRow) {
                 <Menu.MenuItem id="dp-video-call" label="Video call" action={() => startCall(row.id, true)} />
             </>}
             <Menu.MenuItem id="dp-profile" label="View profile" action={() => openProfile(row.id)} />
-            {row.kind === "friend" && (
+            {row.kind === "friend" && <>
                 <Menu.MenuItem
                     id="dp-favorite"
                     label={row.favorite ? "Remove from favorites" : "Add to favorites"}
                     action={() => toggleFavorite(row.id)}
                 />
-            )}
+                <Menu.MenuItem id="dp-nickname" label="Edit Friend Nickname" action={() => editFriendNickname(row.id, row.username ?? row.name)} />
+                {hasFriendNickname(row.id) && (
+                    <Menu.MenuItem id="dp-nickname-remove" label="Remove Friend Nickname" action={() => removeFriendNickname(row.id)} />
+                )}
+            </>}
             <Menu.MenuSeparator />
             {row.kind === "friend" && <>
                 <Menu.MenuItem id="dp-remove" label="Remove friend" color="danger" action={() => removeFriend(row.id, row.name)} />
