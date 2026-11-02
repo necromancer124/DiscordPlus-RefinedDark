@@ -5,6 +5,8 @@
   Discord+ relies on (what it reads, the actions it presses, the page layout it adjusts, what's running now) and
   names the affected feature when something fails. **Copy report** copies only the results and versions. It also
   covers friend nicknames (reading and saving) and the Deafen button in the call view.
+- **Fixed: minimizing the call window kept it full size.** After you had resized the call window, the minimized
+  bar sat in an empty box of the old size. It now shrinks to the bar and gets its size back when you expand it.
 - New README screenshots (made-up people): voice rows and notes on cards, the Call menu, the update notice and the
   self-check.
 

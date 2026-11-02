@@ -3,6 +3,7 @@ const R = window.React;
 export const React = R;
 export const { useState, useEffect, useMemo, useRef, useCallback, useLayoutEffect } = R;
 export const createRoot = el => window.ReactDOM.createRoot(el);
+export const ReactDOM = window.ReactDOM;
 
 class Store {
     constructor() { this.l = new Set(); }
@@ -116,3 +117,6 @@ export const ContextMenuApi = {
 };
 // Discord's REST client: only "your notes" is used.
 export const RestAPI = { get: async ({ url }) => { window.__dpLog.push("rest " + url); return { status: 200, body: url === "/users/@me/notes" ? { echo: "the friend with the cat avatar" } : {} }; } };
+
+export const TextInput = ({ onChange, ...props }) =>
+    R.createElement("input", { ...props, className: "mock-text-input", onChange: e => onChange?.(e.target.value) });

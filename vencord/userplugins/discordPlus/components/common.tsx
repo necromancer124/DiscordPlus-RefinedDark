@@ -60,6 +60,13 @@ export function useFloating(
         const el = ref.current, handle = handleRef.current;
         if (!el || !handle || opts.enabled === false) return;
 
+        // React keeps the same element across modes (call window: expanded ↔ minimized), so a size from the
+        // resizable mode would stay inline and hold the non-resizable one at that size.
+        if (!opts.resizable) {
+            el.style.removeProperty("width");
+            el.style.removeProperty("height");
+        }
+
         const saved = settings.store[key];
         if (saved) {
             el.style.left = `${saved.x}px`;

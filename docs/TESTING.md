@@ -1,5 +1,10 @@
 # Testing and verification
 
+## Unreleased — minimized call window size (2026-11-02)
+Vencord's real `pnpm test:ts`: passes. Harness (1400×900): call window resized to 860×650 → Minimize → 471×74 at the
+same spot → Expand → 860×650 again (saved placement kept). Harness mocks gained `ReactDOM` and `TextInput`
+(missing since v1.18 / v1.20, the harness didn't start without them).
+
 ## Unreleased — self-check (2026-10-26)
 Vencord's real `pnpm testTsc`: passes. Harness: 29 checks pass, the rest "n/a" with a reason (chat call buttons only
 in a chat, call window, stream docking, update check not run yet). Removing `ignoreUser` → "✕ Ignore", summary "1
