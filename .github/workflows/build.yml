@@ -48,7 +48,13 @@ jobs:
 
       - name: Type-check
         working-directory: vencord-src
-        run: pnpm testTsc
+        # Vencord renamed testTsc to test:ts; use whichever this checkout has.
+        run: |
+          if node -e "process.exit(require('./package.json').scripts['test:ts'] ? 0 : 1)"; then
+            pnpm test:ts
+          else
+            pnpm testTsc
+          fi
 
       - name: Check preview and installer scripts
         run: |

@@ -6,7 +6,7 @@ same spot → Expand → 860×650 again (saved placement kept). Harness mocks ga
 (missing since v1.18 / v1.20, the harness didn't start without them).
 
 ## v1.22.0 — self-check (2026-10-26)
-Vencord's real `pnpm testTsc`: passes. Harness: 29 checks pass, the rest "n/a" with a reason (chat call buttons only
+Vencord's real `pnpm test:ts`: passes. Harness: 29 checks pass, the rest "n/a" with a reason (chat call buttons only
 in a chat, call window, stream docking, update check not run yet). Removing `ignoreUser` → "✕ Ignore", summary "1
 part of Discord changed: Ignore / Unignore may not work."; Copy report holds only check names and results.
 
