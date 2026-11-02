@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.22.0 — 2026-11-02
 - **Self-check** at the top of Discord+ settings (also in the Vencord toolbox): tests every part of Discord that
   Discord+ relies on (what it reads, the actions it presses, the page layout it adjusts, what's running now) and
   names the affected feature when something fails. **Copy report** copies only the results and versions. It also
