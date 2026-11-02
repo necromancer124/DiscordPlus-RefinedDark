@@ -1,5 +1,10 @@
 # Testing and verification
 
+## Unreleased — self-check (2026-10-26)
+Vencord's real `pnpm testTsc`: passes. Harness: 29 checks pass, the rest "n/a" with a reason (chat call buttons only
+in a chat, call window, stream docking, update check not run yet). Removing `ignoreUser` → "✕ Ignore", summary "1
+part of Discord changed: Ignore / Unignore may not work."; Copy report holds only check names and results.
+
 ## v1.21.1 — card heights (2026-10-27)
 **Real client:** cards next to a friend in a voice channel keep their own height (confirmed by the user).
 

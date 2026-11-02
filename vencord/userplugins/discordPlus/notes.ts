@@ -24,6 +24,7 @@ export const NotesStore = {
 };
 
 let loadedAt = 0;
+let failed = false;
 let waiting: ReturnType<typeof setInterval> | undefined;
 /** Don't ask again for this long (reconnects happen often). */
 const RELOAD_MS = 15 * 60_000;
@@ -40,11 +41,18 @@ async function load() {
                 if (typeof note === "string" && note.trim()) notes.set(id, note.trim());
             }
         }
+        failed = false;
         notify();
     } catch (e) {
         loadedAt = 0;
+        failed = true;
         console.warn("[Discord+] couldn't load your notes", e);
     }
+}
+
+/** For the self-check: loaded, how many, or did Discord refuse. */
+export function notesStatus() {
+    return { loaded: loadedAt > 0 && !failed, failed, count: notes.size };
 }
 
 /** Load once Discord is logged in. */

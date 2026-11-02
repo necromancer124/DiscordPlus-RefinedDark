@@ -9,21 +9,26 @@ native-feeling "vanilla+" Discord, built from the spec in [`MASTER_PROMPT.md`](M
 
 It keeps your real account, friends, servers, messages and voice. It doesn't replace Discord, only refines it.
 
-![Discord+ Home with the friends grid, header and the call manager showing a live screen share](screenshots/home.png)
+![Discord+ Home: friends grid with voice channels (Join / Watch) and notes on the cards, the header, and the call manager showing a live screen share](screenshots/home.png)
 
 <table>
   <tr>
-    <td><img src="screenshots/call-list.png" alt="Narrow call manager with the stream on top and members as a list"></td>
-    <td><img src="screenshots/messages.png" alt="Messages page with DMs and group DMs"></td>
+    <td><img src="screenshots/menu.png" alt="Friend card menu with Message, Call, Video call, View profile, favourites, Remove friend, Block and Ignore"></td>
+    <td><img src="screenshots/update.png" alt="Update notice in the header with its popup: release notes, copy the update command, skip"></td>
   </tr>
   <tr>
+    <td><img src="screenshots/selfcheck.png" alt="Self-check in Discord+ settings listing every part of Discord the plugin relies on"></td>
+    <td><img src="screenshots/call-list.png" alt="Narrow call manager with the stream on top and members as a list"></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/messages.png" alt="Messages page with DMs and group DMs"></td>
     <td><img src="screenshots/pending.png" alt="Pending friend requests with Accept, Deny and Cancel"></td>
-    <td><img src="screenshots/menu.png" alt="Friend card menu (simplified stand-in for Discord's own menu)"></td>
   </tr>
 </table>
 
 <sub>Screenshots are the real plugin code running in the development harness (`dev/harness`) with made-up
-sample people, abstract avatars and an illustrated stand-in for a screen share. No real users are shown.</sub>
+sample people, notes and servers, abstract avatars and an illustrated stand-in for a screen share. The update notice
+shows a made-up version. No real users are shown.</sub>
 
 > **Status:** running in the author's own Discord client and refined from real use. Every build is compiled
 > against the latest Vencord by the [build check](https://github.com/necromancer124/DiscordPlus-RefinedDark/actions/workflows/build.yml). Discord changes its
@@ -106,6 +111,10 @@ removes what it created (it never deletes a Vencord checkout you made yourself).
 
 All in **Settings → Vencord → Plugins → DiscordPlus**, or the sliders icon in the Discord+ header.
 
+At the top of that window is the **self-check**: it tests every part of Discord that Discord+ relies on (data, actions
+and page layout) and says which feature is affected when a Discord update changes something. **Copy report** copies
+just the results and version numbers (no names or messages), ready to paste into an issue.
+
 | Setting | Default |
 |---|---|
 | Discord+ home replaces the Friends page | on |
@@ -127,7 +136,7 @@ All in **Settings → Vencord → Plugins → DiscordPlus**, or the sliders icon
 | Offer to rejoin a call after Discord restarts | on |
 | Reduce motion | off (system setting always respected) |
 
-The Vencord toolbox also has **Discord+ home**, **Check for Discord+ updates** and **Reset Discord+ window positions**.
+The Vencord toolbox also has **Discord+ home**, **Check for Discord+ updates**, **Discord+ self-check** and **Reset Discord+ window positions**.
 
 ## Try the look without installing anything
 

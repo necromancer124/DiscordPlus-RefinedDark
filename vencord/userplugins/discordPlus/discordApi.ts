@@ -304,3 +304,6 @@ export function relativeTime(ms: number) {
     if (s < 86400 * 30) return `${Math.floor(s / 86400)}d`;
     return new Date(ms).toLocaleDateString();
 }
+
+/** The Discord modules Discord+ looks up, for the self-check (selfcheck.ts). */
+export const DiscordModules = { MediaActions, VoiceActions, RelationshipActions, StreamActions, SpeakingStore };

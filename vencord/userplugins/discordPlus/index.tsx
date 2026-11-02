@@ -16,7 +16,9 @@
  *
  * APIs were checked against Vencord source at commit 32c9063 (2026-10-14).
  */
+import { plugins } from "@api/PluginManager";
 import ErrorBoundary from "@components/ErrorBoundary";
+import { openPluginModal } from "@components/settings";
 import definePlugin from "@utils/types";
 import { createRoot } from "@webpack/common";
 import type { Root } from "react-dom/client";
@@ -75,6 +77,7 @@ export default definePlugin({
     toolboxActions: {
         "Discord+ home": () => go(ROUTES.friends),
         "Check for Discord+ updates": () => { checkForUpdateNow(); },
+        "Discord+ self-check": () => { if (plugins.DiscordPlus) openPluginModal(plugins.DiscordPlus); },
         "Reset Discord+ window positions": () => {
             settings.store.dockPlacement = null;
             settings.store.callPlacement = null;

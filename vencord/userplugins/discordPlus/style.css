@@ -457,6 +457,58 @@ body:has(:is([class^="layers_"], [class*=" layers_"]) > :is([class^="layer_"], [
 .dp-header-search input::placeholder { color: var(--dp-muted); }
 .dp-header-actions { display: flex; align-items: center; gap: 4px; }
 
+/* Self-check (Discord+ settings window) */
+.dp-selfcheck {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--dp-secondary);
+    background: var(--dp-card);
+    border: 1px solid var(--dp-line);
+    border-radius: 12px;
+}
+.dp-selfcheck-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.dp-selfcheck-head > div:first-child { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 220px; }
+.dp-selfcheck-head strong { font-size: 15px; color: var(--dp-text); }
+.dp-selfcheck-good { color: var(--dp-green); }
+.dp-selfcheck-bad { color: var(--dp-red); }
+.dp-selfcheck-buttons { display: flex; gap: 6px; }
+.dp-selfcheck-buttons button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 11px;
+    font: inherit;
+    font-weight: 600;
+    color: var(--dp-text);
+    background: var(--dp-chip);
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+}
+.dp-selfcheck-buttons button:hover { filter: brightness(1.12); }
+.dp-selfcheck-group h4 {
+    margin: 0 0 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--dp-muted);
+}
+.dp-selfcheck-row { display: grid; grid-template-columns: 18px minmax(120px, 0.9fr) 1.4fr; gap: 8px; align-items: baseline; padding: 3px 0; }
+.dp-selfcheck-mark { font-weight: 700; text-align: center; }
+.dp-selfcheck-row.dp-ok .dp-selfcheck-mark { color: var(--dp-green); }
+.dp-selfcheck-row.dp-fail .dp-selfcheck-mark,
+.dp-selfcheck-row.dp-fail .dp-selfcheck-name { color: var(--dp-red); }
+.dp-selfcheck-row.dp-na { opacity: 0.6; }
+.dp-selfcheck-name { color: var(--dp-text); }
+.dp-selfcheck-detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dp-muted); }
+.dp-selfcheck-foot { margin: 0; font-size: 12px; color: var(--dp-muted); }
+
 /* Update notice (a newer Discord+ release on GitHub) */
 .dp-update { position: relative; }
 /* While the popup is open the header sits above the call window (1000), still below Discord's popouts. */

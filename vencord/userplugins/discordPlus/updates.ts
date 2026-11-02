@@ -21,6 +21,10 @@ const FIRST_CHECK_MS = 15_000;
 const EVERY_MS = 6 * 3600_000;
 
 let latest: UpdateInfo | null = null;
+let last = { at: 0, ok: false };
+
+/** For the self-check: when the last check ran and whether GitHub answered. */
+export const lastUpdateCheck = () => last;
 const listeners = new Set<() => void>();
 
 /** Flux-store-like, so components can follow it with useStoreTick. */
@@ -52,10 +56,12 @@ export async function checkForUpdate(): Promise<UpdateInfo | null | "error"> {
             ? data.html_url
             : `https://github.com/${REPO}/releases/latest`;
         latest = version && isNewer(version, VERSION) ? { version, url } : null;
+        last = { at: Date.now(), ok: true };
         listeners.forEach(cb => cb());
         return latest;
     } catch (e) {
         console.warn("[Discord+] update check failed", e);
+        last = { at: Date.now(), ok: false };
         return "error";
     }
 }
