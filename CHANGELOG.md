@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.22.1 — 2026-11-05
 - **Fixed: no Deafen button while watching a stream** ([#2](https://github.com/necromancer124/DiscordPlus-RefinedDark/issues/2)).
   Watching a stream, Discord's call view ends with Stop Watching instead of Disconnect, and Discord+ only looked
   for Disconnect to find the bar. It now finds the bar from either.
