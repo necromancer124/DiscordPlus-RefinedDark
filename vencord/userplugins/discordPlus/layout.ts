@@ -205,23 +205,27 @@ const notOurs = (el: Element) => !el.closest(`#vc-discordplus-root, .${CALLBAR_D
 const controlsIn = (el: Element) => [...el.querySelectorAll(CONTROL)].filter(notOurs);
 let deafenHost: HTMLElement | null = null;
 
+/** The red button at the end of the call view's bar: Disconnect, or Stop Watching while you watch a stream. */
+const BAR_END = '[aria-label*="disconnect" i], [aria-label*="leave call" i], [aria-label*="stop watching" i], [aria-label*="stop streaming" i]';
+
 /**
  * Discord's call-view bottom bar: the group holding its mic button (mic + its options arrow), found from the
- * Disconnect button that is not in the bottom-left voice panel. Null when no call view is open.
+ * bar's red end button that is not in the bottom-left voice panel. Null when no call view is open.
  */
 function findCallBarMic(): { group: HTMLElement; bar: HTMLElement; } | null {
     const panel = document.querySelector(SEL.panels);
-    const leave = [...document.querySelectorAll<HTMLElement>('[aria-label*="disconnect" i], [aria-label*="leave call" i]')]
-        .find(el => notOurs(el) && !panel?.contains(el));
-    let bar = leave?.parentElement ?? null;
-    for (let i = 0; bar && bar !== document.body && i < 8; i++, bar = bar.parentElement) {
-        const mic = controlsIn(bar).find(el => MIC_LABEL.test(el.getAttribute("aria-label") ?? ""));
-        if (!mic) continue;
-        // The highest ancestor of the mic that holds at most the mic and its options arrow.
-        let group = mic as HTMLElement;
-        while (group.parentElement && group.parentElement !== bar && controlsIn(group.parentElement).length <= 2)
-            group = group.parentElement;
-        return { group, bar };
+    const outside = (el: Element) => notOurs(el) && !panel?.contains(el);
+    for (const end of [...document.querySelectorAll<HTMLElement>(BAR_END)].filter(outside)) {
+        let bar = end.parentElement;
+        for (let i = 0; bar && bar !== document.body && i < 8; i++, bar = bar.parentElement) {
+            const mic = controlsIn(bar).find(el => outside(el) && MIC_LABEL.test(el.getAttribute("aria-label") ?? ""));
+            if (!mic) continue;
+            // The highest ancestor of the mic that holds at most the mic and its options arrow.
+            let group = mic as HTMLElement;
+            while (group.parentElement && group.parentElement !== bar && controlsIn(group.parentElement).length <= 2)
+                group = group.parentElement;
+            return { group, bar };
+        }
     }
     return null;
 }

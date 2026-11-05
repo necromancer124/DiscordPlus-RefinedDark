@@ -1,5 +1,10 @@
 # Testing and verification
 
+## Unreleased — Deafen while watching a stream (#2, 2026-11-05)
+Vencord's real `pnpm test:ts`: passes. Harness (stand-in call bar: mic + arrow, camera + arrow, four buttons, red end
+button): ending in Stop Watching → Deafen placed right after the mic group; ending in Disconnect → same; bar removed →
+Deafen removed. Not yet confirmed in the real client while watching a stream.
+
 ## v1.22.0 — minimized call window size (2026-11-02)
 Vencord's real `pnpm test:ts`: passes. Harness (1400×900): call window resized to 860×650 → Minimize → 471×74 at the
 same spot → Expand → 860×650 again (saved placement kept). Harness mocks gained `ReactDOM` and `TextInput`
